@@ -8,7 +8,15 @@ import re
 def scrap_emails(link):
     response = requests.get(link)
     soup = BeautifulSoup(response.content, "html.parser")
-    mailtos = soup.select('a[href^=mailto]')
+
+    email = soup(text=re.compile(r'[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*'))
+
+    _emailtokens = str(email).replace("\\t", "").replace("\\n", "").split(' ')
+
+    if len(_emailtokens):
+        print([match.group(0) for token in _emailtokens for match in
+               [re.search(r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)", str(token.strip()))] if match])
+    '''mailtos = soup.select('a[href^=mailto]')
     emails = []
     for i in mailtos:
         #if i.string != None:
@@ -19,8 +27,10 @@ def scrap_emails(link):
         except ValueError:
             break
         emails.append(str2)
-
+    
     return emails
+    '''
+
 dtypes = {
     'Kod_TERYT': 'object', 'nazwa_samorządu': 'object', 'Województwo': 'object', 'Powiat': 'object', 'typ_JST': 'object',
     'nazwa_urzędu_JST': 'object', 'miejscowość': 'object', 'Kod pocztowy': 'object', 'poczta': 'object','Ulica': 'object',
