@@ -1,27 +1,46 @@
 import urllib
 
+import numpy as np
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import re
 from url import get_kontakt_url
 
+def remove_duplicates(list):
+    res = []
+    [res.append(x) for x in list if x not in res]
+    return res
+
 def scrap_emails(link): #do znalezienia emaili
-    response = requests.get(link)
-    soup = BeautifulSoup(response.content, "html.parser")
+    try:
 
-    email = soup(text=re.compile(r'[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*'))
+        response = requests.get(link)
 
-    _emailtokens = str(email).replace("\\t", "").replace("\\n", "").split(' ')
+        soup = BeautifulSoup(response.content, "html.parser")
 
-    if len(_emailtokens):
-        print([match.group(0) for token in _emailtokens for match in
-               [re.search(r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)", str(token.strip()))] if match])
+        email = soup(text=re.compile(r'[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*'))
 
+        _emailtokens = str(email).replace("\\t", "").replace("\\n", "").split(' ')
+
+        email_list = []
+
+        if len(_emailtokens):
+            email_list.append([match.group(0) for token in _emailtokens for match in
+                    [re.search(r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)", str(token.strip()))] if match])
+
+        email_list = np.squeeze(email_list, axis=0) #aby jednowymiarowa tabela
+
+        return remove_duplicates(email_list)
+    except requests.exceptions.RequestException as e:
+        print("blad strony")
 def check_in_page(text, link): #do odszukania tekstu na stronie
-    response = requests.get(link)
-    soup = BeautifulSoup(response.content, "html.parser")
-    return bool(soup.find(text=re.compile(text)))
+    try:
+        response = requests.get(link)
+        soup = BeautifulSoup(response.content, "html.parser")
+        return bool(soup.find(text=re.compile(text)))
+    except requests.exceptions.RequestException as e:
+        print("blad strony")
 
 #def check_all_in_page
 
