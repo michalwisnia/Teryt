@@ -30,7 +30,9 @@ def scrap_emails(link):
     
     return emails
     '''
+#def scrapfax(link):
 
+#def find
 dtypes = {
     'Kod_TERYT': 'object', 'nazwa_samorządu': 'object', 'Województwo': 'object', 'Powiat': 'object', 'typ_JST': 'object',
     'nazwa_urzędu_JST': 'object', 'miejscowość': 'object', 'Kod pocztowy': 'object', 'poczta': 'object','Ulica': 'object',
@@ -46,8 +48,10 @@ baza_teleadresowa_jst_df = baza_teleadresowa_jst_df.loc[:, ~baza_teleadresowa_js
 
 i = 0
 for adres_www in baza_teleadresowa_jst_df['adres www jednostki']:
-    kontakt_url = None
 
+    fax = baza_teleadresowa_jst_df['FAX kierunkowy'][i]
+
+    kontakt_url = None
     if not adres_www.startswith("http"):
         url = "http://" + adres_www
         print(str(i) + " " + url)
@@ -138,5 +142,6 @@ for adres_www in baza_teleadresowa_jst_df['adres www jednostki']:
 
     print(scrap_emails(kontakt_url))
 
+    i+=1
 
     print()
