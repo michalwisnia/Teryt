@@ -100,7 +100,18 @@ def scrap_address(link):
     except requests.exceptions.RequestException as e:
         print("blad strony")
 
+def scrap_ESP(link):
+    try:
+        response = requests.get(link)
+        soup = BeautifulSoup(response.content, "html.parser")
 
+        esp_pattern = '\/\w*\/[sS]krytka[ESP]*'
+
+        esp = re.search(esp_pattern, soup.text)
+        if esp is not None:
+            return esp.group(0)
+    except requests.exceptions.RequestException as e:
+        print("blad strony")
 
 def check_in_page(text, link): #do odszukania tekstu na stronie
     try:
@@ -156,6 +167,7 @@ if __name__ == "__main__":
         # print(scrap_emails(kontakt_url))
         print(scrap_tel(kontakt_url))
         print(scrap_address(kontakt_url))
+        print(scrap_ESP(kontakt_url))
 
 
 
