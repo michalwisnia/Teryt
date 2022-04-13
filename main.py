@@ -1,5 +1,3 @@
-import urllib
-
 import numpy as np
 import pandas as pd
 import requests
@@ -7,23 +5,38 @@ from bs4 import BeautifulSoup
 import re
 from url import get_kontakt_url
 
-tel_regex = []
-address_zip_code_regex = []
+regex_dict = {
+    "tel": ['tel.txt'],
+    "address_zip_code": ['kod_miasto.txt']
+}
 
 #address_regex = ['ul\.', 'UL\.', 'ul:']
 #address_regex = [".*" + address + ".*" for address in address_regex]
 
 def load_patterns():
-    global tel_regex, address_zip_code_regex
-    data_file = open(f"regex_patterns/tel.txt", "r")
-    for tel in data_file.read().split('\n'):
-        tel_regex.append([tel, ".*" + tel + ".*"])
-    data_file.close()
+    global regex_dict
+    for key in regex_dict:
+        tmp = []
+        tmp.append(regex_dict[key][0])
+        tmp.append([])
+        data_file = open(f"regex_patterns/{regex_dict[key][0]}", "r")
+        for pattern in data_file.read().split('\n'):
+            tmp[1].append([pattern, ".*" + pattern + ".*"])
+        regex_dict.update({key: tmp})
+        data_file.close()
 
-    data_file = open(f"regex_patterns/kod_miasto.txt", "r")
-    for kod_miasto in data_file.read().split('\n'):
-        address_zip_code_regex.append([kod_miasto, ".*" + kod_miasto + ".*"])
-    data_file.close()
+# def load_patterns():
+#     global tel_regex, address_zip_code_regex
+#     global regex_dict
+#     data_file = open(f"regex_patterns/tel.txt", "r")
+#     for tel in data_file.read().split('\n'):
+#         tel_regex.append([tel, ".*" + tel + ".*"])
+#     data_file.close()
+#
+#     data_file = open(f"regex_patterns/kod_miasto.txt", "r")
+#     for kod_miasto in data_file.read().split('\n'):
+#         address_zip_code_regex.append([kod_miasto, ".*" + kod_miasto + ".*"])
+#     data_file.close()
 
 
 def remove_duplicates(list):
@@ -59,9 +72,9 @@ def scrap_tel(link):
         tel_list = []
         response = requests.get(link)
         soup = BeautifulSoup(response.content, "html.parser")
-        for tel in tel_regex:
-            regex_search = re.compile(tel[1])
-            regex_strip = re.compile(tel[0])
+        for pattern in regex_dict.get("tel")[1]:
+            regex_strip = re.compile(pattern[0])
+            regex_search = re.compile(pattern[1])
             result = soup.body.findAll(text=regex_search)
             for x in result:
                 num_only = regex_strip.search(x)
@@ -76,9 +89,9 @@ def scrap_address(link):
         address_list = []
         response = requests.get(link)
         soup = BeautifulSoup(response.content, "html.parser")
-        for address in address_zip_code_regex:
-            regex_search = re.compile(address[1])
-            regex_strip = re.compile(address[0])
+        for pattern in regex_dict.get("address_zip_code")[1]:
+            regex_strip = re.compile(pattern[0])
+            regex_search = re.compile(pattern[1])
             result = soup.body.findAll(text=regex_search)
             for x in result:
                 num_only = regex_strip.search(x)
@@ -140,7 +153,7 @@ if __name__ == "__main__":
         print("zawarty email = ", check_in_page(str(email), kontakt_url))
 
         load_patterns()
-        print(scrap_emails(kontakt_url))
+        # print(scrap_emails(kontakt_url))
         print(scrap_tel(kontakt_url))
         print(scrap_address(kontakt_url))
 
