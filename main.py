@@ -13,6 +13,7 @@ regex_dict = {
 #address_regex = ['ul\.', 'UL\.', 'ul:']
 #address_regex = [".*" + address + ".*" for address in address_regex]
 
+
 def load_patterns():
     global regex_dict
     for key in regex_dict:
@@ -194,9 +195,9 @@ if __name__ == "__main__":
 
     baza_teleadresowa_jst_df = pd.read_csv("csv_Baza_teleadresowa_jst_stan_na_19_05_2021.csv", sep=";", encoding="windows-1250", dtype=dtypes)
     baza_teleadresowa_jst_df = baza_teleadresowa_jst_df.loc[:, ~baza_teleadresowa_jst_df.columns.str.contains('^Unnamed')]
-
+    baza_teleadresowa_modified = baza_teleadresowa_jst_df
     load_patterns()
-
+    baza_teleadresowa_jst_df['adresy email'] = baza_teleadresowa_jst_df['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
     i = 0
     for index, row in baza_teleadresowa_jst_df.iterrows():
         print(i)
@@ -213,18 +214,27 @@ if __name__ == "__main__":
 
         fax_kier = row['FAX kierunkowy']
         fax_reszta = row['FAX']
-        kontakt_url = get_kontakt_url(adres_www)
 
         email = row['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
 
-        #print(email)
-        #print("zawarty email = ", check_in_page(str(email), kontakt_url))
+        #row['adres www jednostki'] += url_checker(adres_www)
 
-        load_patterns()
+        kontakt_url = get_kontakt_url(adres_www)
+
+
+        #print(email) przykładowe załadowanie do pliku
+        if(check_in_page(str(email), kontakt_url)) == True:
+            row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'] += " Prawidłowy "
+        else:
+            row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'] += " Nieprawidłowy "
+
         #print(scrap_emails(kontakt_url))
-        print(scrap_tel(kontakt_url))
-        print(scrap_address(kontakt_url))
-        print(scrap_ESP(kontakt_url))
+        row['adresy email'] = scrap_emails(kontakt_url)
+
+
+        #print(scrap_tel(kontakt_url))
+        #print(scrap_address(kontakt_url))
+        #print(scrap_ESP(kontakt_url))
 
 
         #print(tel_kier+" "+tel_reszta)
@@ -234,4 +244,5 @@ if __name__ == "__main__":
 
         i += 1
 
-        print()
+
+    baza_teleadresowa_jst_df.to_csv('baza_nowa.csv')
