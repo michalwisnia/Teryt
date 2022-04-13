@@ -84,6 +84,23 @@ def scrap_tel(link):
     except requests.exceptions.RequestException as e:
         print("blad strony")
 
+def scrap_fax(link):
+    try:
+        fax_list = []
+        response = requests.get(link)
+        soup = BeautifulSoup(response.content, "html.parser")
+        for pattern in regex_dict.get("fax")[1]:
+            regex_strip = re.compile(pattern[0])
+            regex_search = re.compile(pattern[1])
+            result = soup.body.findAll(text=regex_search)
+            for x in result:
+                num_only = regex_strip.search(x)
+                fax_list.append(num_only.group())
+
+        return remove_duplicates(fax_list)
+    except requests.exceptions.RequestException as e:
+        print("blad strony")
+
 def scrap_address(link):
     try:
         address_list = []
@@ -121,7 +138,47 @@ def check_in_page(text, link): #do odszukania tekstu na stronie
     except requests.exceptions.RequestException as e:
         print("blad strony")
 
-#def check_all_in_page
+def generate_number_combinations(tel_kier, tel_reszta):
+    combinations = []
+    combinations.append(tel_kier+tel_reszta)
+    combinations.append(tel_kier + " " + tel_reszta)
+    combinations.append(tel_kier + "-" + tel_reszta)
+    combinations.append(tel_kier + tel_reszta[0]+"-"+tel_reszta[1:4]+"-"+tel_reszta[4:7])
+    combinations.append(tel_kier + tel_reszta[0] + " " + tel_reszta[1:4] + " " + tel_reszta[4:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:2] + " " + tel_reszta[2:4] + " " + tel_reszta[4:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:2] + "-" + tel_reszta[2:4] + "-" + tel_reszta[4:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:3] + "-" + tel_reszta[3:5] + "-" + tel_reszta[5:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:3] + " " + tel_reszta[3:5] + " " + tel_reszta[5:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:2] + "-" + tel_reszta[2:4] + "-" + tel_reszta[5:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:4] + " " + tel_reszta[4:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:4] + "-" + tel_reszta[4:7])
+    #combinations.append("(+48 "+ tel_kier + ") " + tel_reszta[0:2] + " " + tel_reszta[2:4] + " " + tel_reszta[4:7]) #wywala?
+    #combinations.append("(+48 "+ tel_kier + ") " + tel_reszta[0:3] + "-" + tel_reszta[3:5] + " " + tel_reszta[5:7]) #wywala?
+    #combinations.append("(+48 "+ tel_kier + ") " + tel_reszta) #wywala?
+
+    #combinations.append(tel_kier+")" + " " + tel_reszta[0:2] + " " + tel_reszta[2:4] + " " + tel_reszta[4:7])
+    #combinations.append(tel_kier+")" + " " + tel_reszta[0:3] + " " + tel_reszta[3:5] + " " + tel_reszta[5:7])
+    #combinations.append(tel_kier+")" + " " + tel_reszta[0:4] + "-" + tel_reszta[4:7])
+
+    combinations.append(tel_kier + "/ " + tel_reszta[0:3] + " " + tel_reszta[3:5] + " " + tel_reszta[5:7])
+
+    combinations.append(tel_kier + " " + tel_reszta[0:2] + "-" + tel_reszta[2:4] + "-" + tel_reszta[4:7])
+
+
+    return combinations
+
+def check_combinations(combinations, link):
+    try:
+        response = requests.get(link)
+        soup = BeautifulSoup(response.content, "html.parser")
+        for c in combinations:
+            if bool(soup.find(text=re.compile(c))) == True:
+                print("found ",c)
+                return True
+    except requests.exceptions.RequestException as e:
+        print("blad strony")
+    print("not found")
+    return False
 
 dtypes = {
     'Kod_TERYT': 'object', 'nazwa_samorządu': 'object', 'Województwo': 'object', 'Powiat': 'object', 'typ_JST': 'object',
@@ -160,15 +217,18 @@ if __name__ == "__main__":
 
         email = row['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
 
-        print(email)
-        print("zawarty email = ", check_in_page(str(email), kontakt_url))
+        #print(email)
+        #print("zawarty email = ", check_in_page(str(email), kontakt_url))
 
         load_patterns()
-        # print(scrap_emails(kontakt_url))
+        #print(scrap_emails(kontakt_url))
         print(scrap_tel(kontakt_url))
         print(scrap_address(kontakt_url))
         print(scrap_ESP(kontakt_url))
 
+
+        #print(tel_kier+" "+tel_reszta)
+        #check_combinations(generate_number_combinations(tel_kier, tel_reszta),kontakt_url)
 
 
 
