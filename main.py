@@ -12,6 +12,7 @@ regex_dict = {
 }
 
 
+
 def load_patterns():
     global regex_dict
     for key in regex_dict:
@@ -43,6 +44,20 @@ def scrap_emails(soup): #do znalezienia emaili
         email_list = np.squeeze(email_list, axis=0) #aby jednowymiarowa tabela
 
         return remove_duplicates(email_list)
+
+def scrap_fax(link):
+    fax_list = []
+    response = requests.get(link)
+    soup = BeautifulSoup(response.content, "html.parser")
+    for pattern in regex_dict.get("fax")[1]:
+        regex_strip = re.compile(pattern[0])
+        regex_search = re.compile(pattern[1])
+        result = soup.body.findAll(text=regex_search)
+        for x in result:
+            num_only = regex_strip.search(x)
+            fax_list.append(num_only.group())
+
+      return remove_duplicates(fax_list)
 
 def scrap_tel(soup):
     tel_list = []
@@ -86,7 +101,47 @@ def scrap_ESP(soup):
 def check_in_page(text, soup): #do odszukania tekstu na stronie
     return bool(soup.find(text=re.compile(text)))
 
-#def check_all_in_page
+def generate_number_combinations(tel_kier, tel_reszta):
+    combinations = []
+    combinations.append(tel_kier+tel_reszta)
+    combinations.append(tel_kier + " " + tel_reszta)
+    combinations.append(tel_kier + "-" + tel_reszta)
+    combinations.append(tel_kier + tel_reszta[0]+"-"+tel_reszta[1:4]+"-"+tel_reszta[4:7])
+    combinations.append(tel_kier + tel_reszta[0] + " " + tel_reszta[1:4] + " " + tel_reszta[4:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:2] + " " + tel_reszta[2:4] + " " + tel_reszta[4:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:2] + "-" + tel_reszta[2:4] + "-" + tel_reszta[4:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:3] + "-" + tel_reszta[3:5] + "-" + tel_reszta[5:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:3] + " " + tel_reszta[3:5] + " " + tel_reszta[5:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:2] + "-" + tel_reszta[2:4] + "-" + tel_reszta[5:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:4] + " " + tel_reszta[4:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:4] + "-" + tel_reszta[4:7])
+    #combinations.append("(+48 "+ tel_kier + ") " + tel_reszta[0:2] + " " + tel_reszta[2:4] + " " + tel_reszta[4:7]) #wywala?
+    #combinations.append("(+48 "+ tel_kier + ") " + tel_reszta[0:3] + "-" + tel_reszta[3:5] + " " + tel_reszta[5:7]) #wywala?
+    #combinations.append("(+48 "+ tel_kier + ") " + tel_reszta) #wywala?
+
+    #combinations.append(tel_kier+")" + " " + tel_reszta[0:2] + " " + tel_reszta[2:4] + " " + tel_reszta[4:7])
+    #combinations.append(tel_kier+")" + " " + tel_reszta[0:3] + " " + tel_reszta[3:5] + " " + tel_reszta[5:7])
+    #combinations.append(tel_kier+")" + " " + tel_reszta[0:4] + "-" + tel_reszta[4:7])
+
+    combinations.append(tel_kier + "/ " + tel_reszta[0:3] + " " + tel_reszta[3:5] + " " + tel_reszta[5:7])
+
+    combinations.append(tel_kier + " " + tel_reszta[0:2] + "-" + tel_reszta[2:4] + "-" + tel_reszta[4:7])
+
+
+    return combinations
+
+def check_combinations(combinations, link):
+    try:
+        response = requests.get(link)
+        soup = BeautifulSoup(response.content, "html.parser")
+        for c in combinations:
+            if bool(soup.find(text=re.compile(c))) == True:
+                print("found ",c)
+                return True
+    except requests.exceptions.RequestException as e:
+        print("blad strony")
+    print("not found")
+    return False
 
 dtypes = {
     'Kod_TERYT': 'object', 'nazwa_samorządu': 'object', 'Województwo': 'object', 'Powiat': 'object', 'typ_JST': 'object',
@@ -102,9 +157,9 @@ if __name__ == "__main__":
 
     baza_teleadresowa_jst_df = pd.read_csv("csv_Baza_teleadresowa_jst_stan_na_19_05_2021.csv", sep=";", encoding="windows-1250", dtype=dtypes)
     baza_teleadresowa_jst_df = baza_teleadresowa_jst_df.loc[:, ~baza_teleadresowa_jst_df.columns.str.contains('^Unnamed')]
-
+    baza_teleadresowa_modified = baza_teleadresowa_jst_df
     load_patterns()
-
+    baza_teleadresowa_jst_df['adresy email'] = baza_teleadresowa_jst_df['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
     i = 0
     for index, row in baza_teleadresowa_jst_df.iterrows():
         print(i)
@@ -121,9 +176,12 @@ if __name__ == "__main__":
 
         fax_kier = row['FAX kierunkowy']
         fax_reszta = row['FAX']
-        kontakt_url = get_kontakt_url(adres_www)
 
         email = row['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
+        
+        #row['adres www jednostki'] += url_checker(adres_www)
+
+        kontakt_url = get_kontakt_url(adres_www)
 
         load_patterns()
         try:
@@ -139,12 +197,28 @@ if __name__ == "__main__":
             print(f"Kod pocztowy, miasto:  {scrap_address_zip_city(page_body)}")
             print(f"Ulica:  {scrap_address_street(page_body)}")
             print(f"Skrytka:  {scrap_ESP(page_body)}")
+            
+            
+            #print(email) przykładowe załadowanie do pliku
+            if(check_in_page(str(email), page_body)) == True:
+              row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'] += " Prawidłowy "
+            else:
+            row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'] += " Nieprawidłowy "
+
+            #print(scrap_emails(page_body))
+            row['adresy email'] = scrap_emails(page_body)
+        
         except requests.exceptions.RequestException as e:
             print("blad strony")
 
 
 
+        #print(tel_kier+" "+tel_reszta)
+        #check_combinations(generate_number_combinations(tel_kier, tel_reszta),kontakt_url)
+
+
 
         i += 1
 
-        print()
+
+    baza_teleadresowa_jst_df.to_csv('baza_nowa.csv')
