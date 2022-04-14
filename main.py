@@ -54,7 +54,7 @@ def scrap_fax(soup):
         result = soup.body.findAll(text=regex_search)
         for x in result:
             num_only = regex_strip.search(x)
-            fax_list.append(num_only.group())
+            fax_list.append(num_only.group().strip())
 
     return remove_duplicates(fax_list)
 
@@ -66,7 +66,7 @@ def scrap_tel(soup):
         result = soup.body.findAll(text=regex_search)
         for x in result:
             num_only = regex_strip.search(x)
-            tel_list.append(num_only.group())
+            tel_list.append(num_only.group().strip())
     return remove_duplicates(tel_list)
 
 def scrap_address_zip_city(soup):
@@ -77,7 +77,7 @@ def scrap_address_zip_city(soup):
         result = soup.body.findAll(text=regex_search)
         for x in result:
             zip = regex_strip.search(x)
-            address_zip_city_list.append(zip.group())
+            address_zip_city_list.append(zip.group().strip())
     return remove_duplicates(address_zip_city_list)
 
 def scrap_address_street(soup):
@@ -88,7 +88,7 @@ def scrap_address_street(soup):
         result = soup.body.findAll(text=regex_search)
         for x in result:
             street = regex_strip.search(x)
-            address_list.append(street.group())
+            address_list.append(street.group().strip())
     return remove_duplicates(address_list)
 
 def scrap_ESP(soup):
