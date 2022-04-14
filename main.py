@@ -7,11 +7,10 @@ from url import get_kontakt_url
 
 regex_dict = {
     "tel": ['tel.txt'],
-    "address_zip_code": ['kod_miasto.txt']
+    "address_zip_code": ['kod_miasto.txt'],
+    "address": ['adres.txt']
 }
 
-#address_regex = ['ul\.', 'UL\.', 'ul:']
-#address_regex = [".*" + address + ".*" for address in address_regex]
 
 def load_patterns():
     global regex_dict
@@ -25,32 +24,12 @@ def load_patterns():
         regex_dict.update({key: tmp})
         data_file.close()
 
-# def load_patterns():
-#     global tel_regex, address_zip_code_regex
-#     global regex_dict
-#     data_file = open(f"regex_patterns/tel.txt", "r")
-#     for tel in data_file.read().split('\n'):
-#         tel_regex.append([tel, ".*" + tel + ".*"])
-#     data_file.close()
-#
-#     data_file = open(f"regex_patterns/kod_miasto.txt", "r")
-#     for kod_miasto in data_file.read().split('\n'):
-#         address_zip_code_regex.append([kod_miasto, ".*" + kod_miasto + ".*"])
-#     data_file.close()
-
-
 def remove_duplicates(list):
     res = []
     [res.append(x) for x in list if x not in res]
     return res
 
-def scrap_emails(link): #do znalezienia emaili
-    try:
-
-        response = requests.get(link)
-
-        soup = BeautifulSoup(response.content, "html.parser")
-
+def scrap_emails(soup): #do znalezienia emaili
         email = soup(text=re.compile(r'[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*'))
 
         _emailtokens = str(email).replace("\\t", "").replace("\\n", "").split(' ')
@@ -64,62 +43,48 @@ def scrap_emails(link): #do znalezienia emaili
         email_list = np.squeeze(email_list, axis=0) #aby jednowymiarowa tabela
 
         return remove_duplicates(email_list)
-    except requests.exceptions.RequestException as e:
-        print("blad strony")
 
-def scrap_tel(link):
-    try:
-        tel_list = []
-        response = requests.get(link)
-        soup = BeautifulSoup(response.content, "html.parser")
-        for pattern in regex_dict.get("tel")[1]:
-            regex_strip = re.compile(pattern[0])
-            regex_search = re.compile(pattern[1])
-            result = soup.body.findAll(text=regex_search)
-            for x in result:
-                num_only = regex_strip.search(x)
-                tel_list.append(num_only.group())
+def scrap_tel(soup):
+    tel_list = []
+    for pattern in regex_dict.get("tel")[1]:
+        regex_strip = re.compile(pattern[0])
+        regex_search = re.compile(pattern[1])
+        result = soup.body.findAll(text=regex_search)
+        for x in result:
+            num_only = regex_strip.search(x)
+            tel_list.append(num_only.group())
+    return remove_duplicates(tel_list)
 
-        return remove_duplicates(tel_list)
-    except requests.exceptions.RequestException as e:
-        print("blad strony")
+def scrap_address_zip_city(soup):
+    address_zip_city_list = []
+    for pattern in regex_dict.get("address_zip_code")[1]:
+        regex_strip = re.compile(pattern[0])
+        regex_search = re.compile(pattern[1])
+        result = soup.body.findAll(text=regex_search)
+        for x in result:
+            zip = regex_strip.search(x)
+            address_zip_city_list.append(zip.group())
+    return remove_duplicates(address_zip_city_list)
 
-def scrap_address(link):
-    try:
-        address_list = []
-        response = requests.get(link)
-        soup = BeautifulSoup(response.content, "html.parser")
-        for pattern in regex_dict.get("address_zip_code")[1]:
-            regex_strip = re.compile(pattern[0])
-            regex_search = re.compile(pattern[1])
-            result = soup.body.findAll(text=regex_search)
-            for x in result:
-                num_only = regex_strip.search(x)
-                address_list.append(num_only.group())
-        return remove_duplicates(address_list)
-    except requests.exceptions.RequestException as e:
-        print("blad strony")
+def scrap_address_street(soup):
+    address_list = []
+    for pattern in regex_dict.get("address")[1]:
+        regex_strip = re.compile(pattern[0])
+        regex_search = re.compile(pattern[1])
+        result = soup.body.findAll(text=regex_search)
+        for x in result:
+            street = regex_strip.search(x)
+            address_list.append(street.group())
+    return remove_duplicates(address_list)
 
-def scrap_ESP(link):
-    try:
-        response = requests.get(link)
-        soup = BeautifulSoup(response.content, "html.parser")
-
+def scrap_ESP(soup):
         esp_pattern = '\/\w*\/[sS]krytka[ESP]*'
-
         esp = re.search(esp_pattern, soup.text)
         if esp is not None:
             return esp.group(0)
-    except requests.exceptions.RequestException as e:
-        print("blad strony")
 
-def check_in_page(text, link): #do odszukania tekstu na stronie
-    try:
-        response = requests.get(link)
-        soup = BeautifulSoup(response.content, "html.parser")
-        return bool(soup.find(text=re.compile(text)))
-    except requests.exceptions.RequestException as e:
-        print("blad strony")
+def check_in_page(text, soup): #do odszukania tekstu na stronie
+    return bool(soup.find(text=re.compile(text)))
 
 #def check_all_in_page
 
@@ -160,14 +125,22 @@ if __name__ == "__main__":
 
         email = row['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
 
-        print(email)
-        print("zawarty email = ", check_in_page(str(email), kontakt_url))
-
         load_patterns()
-        # print(scrap_emails(kontakt_url))
-        print(scrap_tel(kontakt_url))
-        print(scrap_address(kontakt_url))
-        print(scrap_ESP(kontakt_url))
+        try:
+            response = requests.get(kontakt_url)
+            page_body = BeautifulSoup(response.content, "html.parser")
+
+
+            print(email)
+            print("zawarty email = ", check_in_page(str(email), page_body))
+            print('--------SCRAP-------')
+            print(f"Email:  {scrap_emails(page_body)}")
+            print(f"Telefony:  {scrap_tel(page_body)}")
+            print(f"Kod pocztowy, miasto:  {scrap_address_zip_city(page_body)}")
+            print(f"Ulica:  {scrap_address_street(page_body)}")
+            print(f"Skrytka:  {scrap_ESP(page_body)}")
+        except requests.exceptions.RequestException as e:
+            print("blad strony")
 
 
 
