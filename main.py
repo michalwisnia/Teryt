@@ -8,7 +8,8 @@ from url import get_kontakt_url
 regex_dict = {
     "tel": ['tel.txt'],
     "address_zip_code": ['kod_miasto.txt'],
-    "address": ['adres.txt']
+    "address": ['adres.txt'],
+    "fax": ['fax.txt']
 }
 
 
@@ -45,10 +46,8 @@ def scrap_emails(soup): #do znalezienia emaili
 
         return remove_duplicates(email_list)
 
-def scrap_fax(link):
+def scrap_fax(soup):
     fax_list = []
-    response = requests.get(link)
-    soup = BeautifulSoup(response.content, "html.parser")
     for pattern in regex_dict.get("fax")[1]:
         regex_strip = re.compile(pattern[0])
         regex_search = re.compile(pattern[1])
@@ -57,7 +56,7 @@ def scrap_fax(link):
             num_only = regex_strip.search(x)
             fax_list.append(num_only.group())
 
-      return remove_duplicates(fax_list)
+    return remove_duplicates(fax_list)
 
 def scrap_tel(soup):
     tel_list = []
@@ -201,9 +200,9 @@ if __name__ == "__main__":
             
             #print(email) przykładowe załadowanie do pliku
             if(check_in_page(str(email), page_body)) == True:
-              row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'] += " Prawidłowy "
+                row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'] += " Prawidłowy "
             else:
-            row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'] += " Nieprawidłowy "
+                row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'] += " Nieprawidłowy "
 
             #print(scrap_emails(page_body))
             row['adresy email'] = scrap_emails(page_body)
