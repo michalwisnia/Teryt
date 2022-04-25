@@ -153,13 +153,13 @@ def generate_number_combinations(tel_kier, tel_reszta):
     combinations.append(tel_kier + " " + tel_reszta[0:2] + "-" + tel_reszta[2:4] + "-" + tel_reszta[5:7])
     combinations.append(tel_kier + " " + tel_reszta[0:4] + " " + tel_reszta[4:7])
     combinations.append(tel_kier + " " + tel_reszta[0:4] + "-" + tel_reszta[4:7])
-    #combinations.append("(+48 "+ tel_kier + ") " + tel_reszta[0:2] + " " + tel_reszta[2:4] + " " + tel_reszta[4:7]) #wywala?
-    #combinations.append("(+48 "+ tel_kier + ") " + tel_reszta[0:3] + "-" + tel_reszta[3:5] + " " + tel_reszta[5:7]) #wywala?
-    #combinations.append("(+48 "+ tel_kier + ") " + tel_reszta) #wywala?
+    combinations.append("\(+48 "+ tel_kier + "\) " + tel_reszta[0:2] + " " + tel_reszta[2:4] + " " + tel_reszta[4:7]) #wywala?
+    combinations.append("\(+48 "+ tel_kier + "\) " + tel_reszta[0:3] + "-" + tel_reszta[3:5] + " " + tel_reszta[5:7]) #wywala?
+    combinations.append("\(+48 "+ tel_kier + "\) " + tel_reszta) #wywala?
 
-    #combinations.append(tel_kier+")" + " " + tel_reszta[0:2] + " " + tel_reszta[2:4] + " " + tel_reszta[4:7])
-    #combinations.append(tel_kier+")" + " " + tel_reszta[0:3] + " " + tel_reszta[3:5] + " " + tel_reszta[5:7])
-    #combinations.append(tel_kier+")" + " " + tel_reszta[0:4] + "-" + tel_reszta[4:7])
+    combinations.append(tel_kier+"\)" + " " + tel_reszta[0:2] + " " + tel_reszta[2:4] + " " + tel_reszta[4:7])
+    combinations.append(tel_kier+"\)" + " " + tel_reszta[0:3] + " " + tel_reszta[3:5] + " " + tel_reszta[5:7])
+    combinations.append(tel_kier+"\)" + " " + tel_reszta[0:4] + "-" + tel_reszta[4:7])
 
     combinations.append(tel_kier + "/ " + tel_reszta[0:3] + " " + tel_reszta[3:5] + " " + tel_reszta[5:7])
 
@@ -197,7 +197,6 @@ if __name__ == "__main__":
     baza_teleadresowa_jst_df = baza_teleadresowa_jst_df.loc[:, ~baza_teleadresowa_jst_df.columns.str.contains('^Unnamed')]
     baza_teleadresowa_modified = baza_teleadresowa_jst_df
     load_patterns()
-    baza_teleadresowa_jst_df['adresy email'] = baza_teleadresowa_jst_df['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
     i = 0
     for index, row in baza_teleadresowa_jst_df.iterrows():
         print(i)
@@ -218,29 +217,29 @@ if __name__ == "__main__":
         email = row['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
 
         #row['adres www jednostki'] += url_checker(adres_www)
+        # jeśli adres strony nie działa, puste komórki + break
 
         kontakt_url = get_kontakt_url(adres_www)
 
-
-        #print(email) przykładowe załadowanie do pliku
-        if(check_in_page(str(email), kontakt_url)) == True:
-            row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'] += " Prawidłowy "
-        else:
-            row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'] += " Nieprawidłowy "
-
-        #print(scrap_emails(kontakt_url))
-        row['adresy email'] = scrap_emails(kontakt_url)
+        if(check_in_page(str(email), kontakt_url)) == False:
+            row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'] += scrap_emails(kontakt_url)
 
 
-        #print(scrap_tel(kontakt_url))
         #print(scrap_address(kontakt_url))
         #print(scrap_ESP(kontakt_url))
 
 
         #print(tel_kier+" "+tel_reszta)
-        #check_combinations(generate_number_combinations(tel_kier, tel_reszta),kontakt_url)
+        if (check_combinations(generate_number_combinations(tel_kier, tel_reszta),kontakt_url)) == False:
+            print(scrap_tel(kontakt_url))
+            row['telefon kierunkowy'] = scrap_tel(kontakt_url)[0][0:1]
+            row['telefon'] = scrap_tel(kontakt_url)[0][1:]
+            #replace the number with a new one
 
-
+        if (check_combinations(generate_number_combinations(tel_kier, tel_reszta), kontakt_url)) == False:
+            print(scrap_fax(kontakt_url))
+            row['FAX kierunkowy'] = scrap_fax(kontakt_url)[0][0:1]
+            row['FAX'] = scrap_fax(kontakt_url)[0][1:]
 
         i += 1
 
