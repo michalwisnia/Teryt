@@ -47,49 +47,61 @@ def scrap_emails(soup): #do znalezienia emaili
         return remove_duplicates(email_list)
 
 def scrap_fax(soup):
-    fax_list = []
-    for pattern in regex_dict.get("fax")[1]:
-        regex_strip = re.compile(pattern[0])
-        regex_search = re.compile(pattern[1])
-        result = soup.body.findAll(text=regex_search)
-        for x in result:
-            num_only = regex_strip.search(x)
-            fax_list.append(num_only.group().strip())
+    try:
+        fax_list = []
+        for pattern in regex_dict.get("fax")[1]:
+            regex_strip = re.compile(pattern[0])
+            regex_search = re.compile(pattern[1])
+            result = soup.body.findAll(text=regex_search)
+            for x in result:
+                num_only = regex_strip.search(x)
+                fax_list.append(num_only.group().strip())
 
-    return remove_duplicates(fax_list)
+        return remove_duplicates(fax_list)
+    except:
+        return []
 
 def scrap_tel(soup):
-    tel_list = []
-    for pattern in regex_dict.get("tel")[1]:
-        regex_strip = re.compile(pattern[0])
-        regex_search = re.compile(pattern[1])
-        result = soup.body.findAll(text=regex_search)
-        for x in result:
-            num_only = regex_strip.search(x)
-            tel_list.append(num_only.group().strip())
-    return remove_duplicates(tel_list)
+    try:
+        tel_list = []
+        for pattern in regex_dict.get("tel")[1]:
+            regex_strip = re.compile(pattern[0])
+            regex_search = re.compile(pattern[1])
+            result = soup.body.findAll(text=regex_search)
+            for x in result:
+                num_only = regex_strip.search(x)
+                tel_list.append(num_only.group().strip())
+        return remove_duplicates(tel_list)
+    except:
+        return []
 
 def scrap_address_zip_city(soup):
-    address_zip_city_list = []
-    for pattern in regex_dict.get("address_zip_code")[1]:
-        regex_strip = re.compile(pattern[0])
-        regex_search = re.compile(pattern[1])
-        result = soup.body.findAll(text=regex_search)
-        for x in result:
-            zip = regex_strip.search(x)
-            address_zip_city_list.append(zip.group().strip())
-    return remove_duplicates(address_zip_city_list)
+    try:
+        address_zip_city_list = []
+        for pattern in regex_dict.get("address_zip_code")[1]:
+            regex_strip = re.compile(pattern[0])
+            regex_search = re.compile(pattern[1])
+            result = soup.body.findAll(text=regex_search)
+            for x in result:
+                zip = regex_strip.search(x)
+                address_zip_city_list.append(zip.group().strip())
+        return remove_duplicates(address_zip_city_list)
+    except:
+        return []
 
 def scrap_address_street(soup):
-    address_list = []
-    for pattern in regex_dict.get("address")[1]:
-        regex_strip = re.compile(pattern[0])
-        regex_search = re.compile(pattern[1])
-        result = soup.body.findAll(text=regex_search)
-        for x in result:
-            street = regex_strip.search(x)
-            address_list.append(street.group().strip())
-    return remove_duplicates(address_list)
+    try:
+        address_list = []
+        for pattern in regex_dict.get("address")[1]:
+            regex_strip = re.compile(pattern[0])
+            regex_search = re.compile(pattern[1])
+            result = soup.body.findAll(text=regex_search)
+            for x in result:
+                street = regex_strip.search(x)
+                address_list.append(street.group().strip())
+        return remove_duplicates(address_list)
+    except:
+        return []
 
 def scrap_ESP(soup):
         esp_pattern = '\/\w*\/[sS]krytka[ESP]*'
@@ -180,44 +192,77 @@ if __name__ == "__main__":
         #row['adres www jednostki'] += url_checker(adres_www)
         # jeśli adres strony nie działa, puste komórki + break
 
-        kontakt_url = get_kontakt_url(adres_www)
+        urls = get_kontakt_url(adres_www)
+        print(urls)
+
+        scraped_email = []
+        scraped_tel = []
+        scraped_fax = []
+        scraped_address_zip_city = []
+        scraped_address_street = []
+        scraped_esp = None
 
 
         #print(scrap_address(kontakt_url))
         #print(scrap_ESP(kontakt_url))
         load_patterns()
-        try:
-            response = requests.get(kontakt_url)
-            page_body = BeautifulSoup(response.content, "html.parser")
+        for url in urls:
+            try:
+                headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)'}
+                response = requests.get(url, headers=headers)
+                page_body = BeautifulSoup(response.content, "html.parser")
 
-            if (check_in_page(str(email), page_body)) == False:
-                row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'] += scrap_emails(page_body)
+                print(email)
+                print("zawarty email = ", check_in_page(str(email), page_body))
+                print('--------SCRAP-------')
+                print(url)
+                if len(scraped_email) == 0:
+                    scraped_email = scrap_emails(page_body)
+                    print(f"Email:  {scraped_email}")
+                if len(scraped_tel) == 0:
+                    scraped_tel = scrap_tel(page_body)
+                    print(f"Telefony:  {scraped_tel}")
+                if len(scraped_fax) == 0:
+                    scraped_fax = scrap_fax(page_body)
+                    print(f"Fax:  {scraped_fax}")
+                if len(scraped_address_zip_city) == 0:
+                    scraped_address_zip_city = scrap_address_zip_city(page_body)
+                    print(f"Kod pocztowy, miasto:  {scraped_address_zip_city}")
+                if len(scraped_address_street) == 0:
+                    scraped_address_street = scrap_address_street(page_body)
+                    print(f"Ulica:  {scraped_address_street}")
+                if scraped_esp is None:
+                    scraped_esp = scrap_ESP(page_body)
+                    print(f"Skrytka:  {scraped_esp}")
 
-            # print(tel_kier+" "+tel_reszta)
-            if (check_combinations(generate_number_combinations(tel_kier, tel_reszta), page_body)) == False:
-                print(scrap_tel(page_body))
-                row['telefon kierunkowy'] = scrap_tel(page_body)[0][0:1]
-                row['telefon'] = scrap_tel(page_body)[0][1:]
-                # replace the number with a new one
+                # if (check_in_page(str(email), page_body)) == False:
+                #     row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'] += scrap_emails(page_body)
+                #
+                # # print(tel_kier+" "+tel_reszta)
+                # if (check_combinations(generate_number_combinations(tel_kier, tel_reszta), page_body)) == False:
+                #     print(scrap_tel(page_body))
+                #     row['telefon kierunkowy'] = scrap_tel(page_body)[0][0:1]
+                #     row['telefon'] = scrap_tel(page_body)[0][1:]
+                #     # replace the number with a new one
+                #
+                # if (check_combinations(generate_number_combinations(tel_kier, tel_reszta), page_body)) == False:
+                #     print(scrap_fax(page_body))
+                #     row['FAX kierunkowy'] = scrap_fax(page_body)[0][0:1]
+                #     row['FAX'] = scrap_fax(page_body)[0][1:]
+                #
+                # if (check_in_page(str(esp), page_body)) == False:
+                #     row['ESP'] = scrap_ESP(page_body)
+                #
+                #
+                # print(f"Kod pocztowy, miasto:  {scrap_address_zip_city(page_body)}")
+                # print(f"Ulica:  {scrap_address_street(page_body)}")
 
-            if (check_combinations(generate_number_combinations(tel_kier, tel_reszta), page_body)) == False:
-                print(scrap_fax(page_body))
-                row['FAX kierunkowy'] = scrap_fax(page_body)[0][0:1]
-                row['FAX'] = scrap_fax(page_body)[0][1:]
 
-            if (check_in_page(str(esp), page_body)) == False:
-                row['ESP'] = scrap_ESP(page_body)
+            except requests.exceptions.RequestException as e:
+                print("blad strony")
 
-
-            print(f"Kod pocztowy, miasto:  {scrap_address_zip_city(page_body)}")
-            print(f"Ulica:  {scrap_address_street(page_body)}")
-
-            
-            
-
-        
-        except requests.exceptions.RequestException as e:
-            print("blad strony")
+            if len(scraped_email) != 0 and len(scraped_tel) != 0 and len(scraped_fax) != 0 and len(scraped_address_zip_city) != 0 and len(scraped_address_street) !=0 and scraped_esp is not None:
+                break
 
         i += 1
 
