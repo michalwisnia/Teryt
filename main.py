@@ -156,7 +156,6 @@ if __name__ == "__main__":
 
     baza_teleadresowa_jst_df = pd.read_csv("csv_Baza_teleadresowa_jst_stan_na_19_05_2021.csv", sep=";", encoding="windows-1250", dtype=dtypes)
     baza_teleadresowa_jst_df = baza_teleadresowa_jst_df.loc[:, ~baza_teleadresowa_jst_df.columns.str.contains('^Unnamed')]
-    baza_teleadresowa_modified = baza_teleadresowa_jst_df
     load_patterns()
     i = 0
     for index, row in baza_teleadresowa_jst_df.iterrows():
