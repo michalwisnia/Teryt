@@ -209,7 +209,7 @@ if __name__ == "__main__":
         for url in urls:
             try:
                 headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)'}
-                response = requests.get(url, headers=headers)
+                response = requests.get(url, headers=headers, verify=False, timeout=10)
                 page_body = BeautifulSoup(response.content, "html.parser")
 
                 print(email)
