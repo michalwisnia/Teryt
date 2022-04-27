@@ -1,6 +1,10 @@
 import pandas as pd
 from main import dtypes
-
+from main import regex_dict, load_patterns, remove_duplicates, scrap_emails, scrap_fax, scrap_tel, scrap_address_zip_city, scrap_address_street, scrap_ESP, check_in_page, generate_number_combinations, check_combinations
+import requests
+from bs4 import BeautifulSoup
+import re
+from url import get_kontakt_url
 
 terytTypes = {
     'WOJ': 'object', 'POW': 'object', 'GMI': 'object', 'RODZ': 'object', 'NAZWA': 'object', 'NAZWA_DOD': 'object', 'STAN_NA': 'object'
@@ -9,7 +13,9 @@ terytTypes = {
 new_columns = ['TERYT_WOJ', 'TERYT_POW', 'TERYT_NAZWA_SAMORZAU', 'TERYT_TYP_JST',
 			   'COMP_WOJ', 'COMP_POW', 'COMP_NAZWA_SAMORZAU','COMP_TYP_JST',
                'PNA_WOJ', 'PNA_POW', 'PNA_GMI',
-               'COMP_PNA_WOJ', 'COMP_PNA_POW', 'COMP_PNA_GMI']
+               'COMP_PNA_WOJ', 'COMP_PNA_POW', 'COMP_PNA_GMI',
+               'SCRAP_URL', 'SCRAP_MAIL', 'SCRAP_TEL', 'SCRAP_FAX', 'SCRAP_POST_CODE', 'SCRAP_STREET',
+               'COMP_SCRAP_URL', 'COMP_SCRAP_MAIL', 'COMP_SCRAP_TEL', 'COMP_SCRAP_FAX', 'COMP_SCRAP_POST_CODE', 'COMP_SCRAP_STREET']
 
 typ_JST_dict = {
     "gmina miejsko-wiejska": 'GMW',
@@ -43,11 +49,27 @@ if __name__ == "__main__":
 
 	spispna_df['MIEJSCOWOŚĆ'] = spispna_df['MIEJSCOWOŚĆ'].apply(lambda x: x.split('(')[0].rstrip())
 
-	print(spispna_df['MIEJSCOWOŚĆ'])
+	i=0
 	for index, row in result_df.iterrows():
 		kod_teryt = row['Kod_TERYT']
 		kod_pocztowy = row['Kod pocztowy']
 		miasto = row['miejscowość']
+
+		poczta = row['poczta']
+		Ulica = row['Ulica']
+		Nr_domu = row['Nr domu']
+		adres_www = row['adres www jednostki']
+
+		tel_kier = row['telefon kierunkowy']
+		tel_reszta = row['telefon']
+		tel_reszta2 = row['telefon 2']
+
+		fax_kier = row['FAX kierunkowy']
+		fax_reszta = row['FAX']
+		esp = row['ESP']
+
+		email = row['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
+
 		# print(kod_teryt)
 		res_woj = teryt_df.loc[(teryt_df['WOJ'] == kod_teryt[:2]) & (teryt_df['POW'].isna()) & (teryt_df['GMI'].isna())]
 		res_pow = teryt_df.loc[(teryt_df['WOJ'] == kod_teryt[:2]) & (teryt_df['POW'] == kod_teryt[2:4]) & (teryt_df['GMI'].isna())]
@@ -64,7 +86,6 @@ if __name__ == "__main__":
 			result_df.loc[index, "TERYT_TYP_JST"] = typ_JST_dict[res_gmi['NAZWA_DOD'].values[0]]
 		elif not res_pow.empty:
 			result_df.loc[index, "TERYT_TYP_JST"] = typ_JST_dict[res_pow['NAZWA_DOD'].values[0]]
-
 
 
 		if result_df.loc[index, "TERYT_WOJ"] == result_df.loc[index, "Województwo"]:
@@ -117,6 +138,95 @@ if __name__ == "__main__":
 			result_df.at[index, 'COMP_PNA_GMI'] = '1'
 		else:
 			result_df.at[index, 'COMP_PNA_GMI'] = '0'
+
+
+		#SCRAP
+		urls = get_kontakt_url(adres_www)
+		print(urls)
+
+		scraped_email = []
+		scraped_tel = []
+		scraped_fax = []
+		scraped_address_zip_city = []
+		scraped_address_street = []
+		scraped_esp = None
+
+		# print(scrap_address(kontakt_url))
+		# print(scrap_ESP(kontakt_url))
+		load_patterns()
+		for url in urls:
+			try:
+				headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)'}
+				response = requests.get(url, headers=headers)
+				page_body = BeautifulSoup(response.content, "html.parser")
+
+				print(email)
+				#print("zawarty email = ", check_in_page(str(email), page_body))
+				#print('--------SCRAP-------')
+				print(url)
+				if (check_in_page(str(email), page_body)) == True:
+					scraped_email.append(email)
+					result_df.at[index, 'COMP_SCRAP_MAIL'] = '1'
+				if len(scraped_email) == 0:
+					scraped_email = scrap_emails(page_body)
+					#print(f"Email:  {scraped_email}")
+				if (check_combinations(generate_number_combinations(tel_kier, tel_reszta), page_body)) == True:
+					scraped_tel.append(tel_kier + tel_reszta)
+					result_df.at[index, 'COMP_SCRAP_TEL'] = '1'
+				if len(scraped_tel) == 0:
+					scraped_tel = scrap_tel(page_body)
+					#print(f"Telefony:  {scraped_tel}")
+				if (check_combinations(generate_number_combinations(fax_kier, fax_reszta), page_body)) == True:
+					scraped_fax.append(fax_kier + fax_reszta)
+					result_df.at[index, 'COMP_SCRAP_FAX'] = '1'
+				if len(scraped_fax) == 0:
+					scraped_fax = scrap_fax(page_body)
+					#print(f"Fax:  {scraped_fax}")
+				if (check_in_page(str(kod_pocztowy), page_body)) == True:
+					scraped_address_zip_city = kod_pocztowy + miasto
+					result_df.at[index, 'COMP_SCRAP_POST_CODE'] = '1'
+				if len(scraped_address_zip_city) == 0:
+					scraped_address_zip_city = scrap_address_zip_city(page_body)
+					#print(f"Kod pocztowy, miasto:  {scraped_address_zip_city}")
+				if (check_in_page(str(email), page_body)) == True:
+					scraped_address_street.append(str(Ulica) + " " + str(Nr_domu))
+					result_df.at[index, 'COMP_SCRAP_STREET'] = '1'
+				if len(scraped_address_street) == 0:
+					scraped_address_street = scrap_address_street(page_body)
+					#print(f"Ulica:  {scraped_address_street}")
+				if (check_in_page(str(scraped_esp), page_body)) == True:
+					scraped_esp = esp
+				if scraped_esp is None:
+					scraped_esp = scrap_ESP(page_body)
+					#print(f"Skrytka:  {scraped_esp}")
+
+
+
+			except requests.exceptions.RequestException as e:
+				print("blad strony")
+
+			if len(scraped_email) != 0 and len(scraped_tel) != 0 and len(scraped_fax) != 0 and len(
+					scraped_address_zip_city) != 0 and len(scraped_address_street) != 0 and scraped_esp is not None:
+				break
+
+		result_df.at[index, 'SCRAP_URL'] = adres_www
+		if len(scraped_email) != 0:
+			result_df.at[index, 'SCRAP_MAIL'] = scraped_email[0]
+		if len(scraped_tel) != 0:
+			result_df.at[index, 'SCRAP_TEL'] = scraped_tel[0]
+		if len(scraped_fax) != 0:
+			result_df.at[index, 'SCRAP_FAX'] = scraped_fax[0]
+		if len(scraped_address_zip_city) != 0:
+			result_df.at[index, 'SCRAP_POST_CODE'] = scraped_address_zip_city[0]
+		if len(scraped_address_street) != 0:
+			result_df.at[index, 'SCRAP_STREET'] = scraped_address_street[0]
+
+
+
+		i += 1
+		if i >5:
+			break
+
 
 	f = open('out.html', 'w')
 	a = result_df.to_html()

@@ -12,8 +12,6 @@ regex_dict = {
     "fax": ['fax.txt']
 }
 
-
-
 def load_patterns():
     global regex_dict
     for key in regex_dict:
@@ -138,21 +136,19 @@ def generate_number_combinations(tel_kier, tel_reszta):
 
     combinations.append(tel_kier + " " + tel_reszta[0:2] + "-" + tel_reszta[2:4] + "-" + tel_reszta[4:7])
 
-
     return combinations
 
-def check_combinations(combinations, link):
+def check_combinations(combinations, soup):
+    #print(combinations)
     try:
-        response = requests.get(link)
-        soup = BeautifulSoup(response.content, "html.parser")
         for c in combinations:
             if bool(soup.find(text=re.compile(c))) == True:
-                print("found ",c)
+                #print("found ",c)
                 return True
     except requests.exceptions.RequestException as e:
-        print("blad strony")
-    print("not found")
-    return False
+        #print("blad strony")
+        #print("not found")
+        return False
 
 dtypes = {
     'Kod_TERYT': 'object', 'nazwa_samorządu': 'object', 'Województwo': 'object', 'Powiat': 'object', 'typ_JST': 'object',
