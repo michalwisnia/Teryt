@@ -4,7 +4,7 @@ from main import regex_dict, load_patterns, remove_duplicates, scrap_emails, scr
 import requests
 from bs4 import BeautifulSoup
 import re
-from url import get_kontakt_url
+from url import get_kontakt_url, check_url
 
 terytTypes = {
     'WOJ': 'object', 'POW': 'object', 'GMI': 'object', 'RODZ': 'object', 'NAZWA': 'object', 'NAZWA_DOD': 'object', 'STAN_NA': 'object'
@@ -14,8 +14,8 @@ new_columns = ['TERYT_WOJ', 'TERYT_POW', 'TERYT_NAZWA_SAMORZAU', 'TERYT_TYP_JST'
 			   'COMP_WOJ', 'COMP_POW', 'COMP_NAZWA_SAMORZAU','COMP_TYP_JST',
                'PNA_WOJ', 'PNA_POW', 'PNA_GMI',
                'COMP_PNA_WOJ', 'COMP_PNA_POW', 'COMP_PNA_GMI',
-               'SCRAP_URL', 'SCRAP_MAIL', 'SCRAP_TEL', 'SCRAP_FAX', 'SCRAP_POST_CODE', 'SCRAP_STREET',
-               'COMP_SCRAP_URL', 'COMP_SCRAP_MAIL', 'COMP_SCRAP_TEL', 'COMP_SCRAP_FAX', 'COMP_SCRAP_POST_CODE', 'COMP_SCRAP_STREET']
+               'SCRAP_URL', 'SCRAP_MAIL', 'SCRAP_TEL', 'SCRAP_FAX', 'SCRAP_POST_CODE', 'SCRAP_STREET', 'SCRAP_ESP',
+               'COMP_SCRAP_URL', 'COMP_SCRAP_MAIL', 'COMP_SCRAP_TEL', 'COMP_SCRAP_FAX', 'COMP_SCRAP_POST_CODE', 'COMP_SCRAP_STREET', 'COMP_SCRAP_ESP']
 
 typ_JST_dict = {
     "gmina miejsko-wiejska": 'GMW',
@@ -141,6 +141,18 @@ if __name__ == "__main__":
 
 
 		#SCRAP
+
+		if check_url(adres_www) == False:
+			result_df.at[index, 'SCRAP_URL'] = "blad strony"
+			result_df.at[index, 'COMP_SCRAP_URL'] = '0'
+			result_df.at[index, 'COMP_SCRAP_MAIL'] = '0'
+			result_df.at[index, 'COMP_SCRAP_TEL'] = '0'
+			result_df.at[index, 'COMP_SCRAP_FAX'] = '0'
+			result_df.at[index, 'COMP_SCRAP_POST_CODE'] = '0'
+			result_df.at[index, 'COMP_SCRAP_STREET'] = '0'
+			result_df.at[index, 'COMP_SCRAP_ESP'] = '0'
+			continue
+
 		urls = get_kontakt_url(adres_www)
 		print(urls)
 
@@ -196,6 +208,7 @@ if __name__ == "__main__":
 					#print(f"Ulica:  {scraped_address_street}")
 				if (check_in_page(str(scraped_esp), page_body)) == True:
 					scraped_esp = esp
+					result_df.at[index, 'COMP_SCRAP_ESP'] = '1'
 				if scraped_esp is None:
 					scraped_esp = scrap_ESP(page_body)
 					#print(f"Skrytka:  {scraped_esp}")
@@ -210,6 +223,7 @@ if __name__ == "__main__":
 				break
 
 		result_df.at[index, 'SCRAP_URL'] = adres_www
+		result_df.at[index, 'COMP_SCRAP_URL'] = '1'
 		if len(scraped_email) != 0:
 			result_df.at[index, 'SCRAP_MAIL'] = scraped_email[0]
 		if len(scraped_tel) != 0:
@@ -221,11 +235,25 @@ if __name__ == "__main__":
 		if len(scraped_address_street) != 0:
 			result_df.at[index, 'SCRAP_STREET'] = scraped_address_street[0]
 
+		result_df.at[index, 'SCRAP_ESP'] = scraped_esp
 
+
+
+		if not result_df.loc[index, "COMP_SCRAP_MAIL"] == "1":
+			result_df.at[index, 'COMP_SCRAP_MAIL'] = '0'
+		if not result_df.loc[index, "COMP_SCRAP_TEL"] == "1":
+			result_df.at[index, 'COMP_SCRAP_TEL'] = '0'
+		if not result_df.loc[index, "COMP_SCRAP_FAX"] == "1":
+			result_df.at[index, 'COMP_SCRAP_FAX'] = '0'
+		if not result_df.loc[index, "COMP_SCRAP_POST_CODE"] == "1":
+			result_df.at[index, 'COMP_SCRAP_POST_CODE'] = '0'
+		if not result_df.loc[index, "COMP_SCRAP_STREET"] == "1":
+			result_df.at[index, 'COMP_SCRAP_STREET'] = '0'
+		if not result_df.loc[index, "COMP_SCRAP_ESP"] == "1":
+			result_df.at[index, 'COMP_SCRAP_ESP'] = '0'
 
 		i += 1
-		if i >5:
-			break
+		
 
 
 	f = open('out.html', 'w')
