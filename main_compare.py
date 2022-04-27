@@ -123,7 +123,7 @@ if __name__ == "__main__":
 	f.write(a)
 	f.close()
 
-	result_df.to_csv('out.csv')
+	result_df.to_csv('out.csv', index=False, sep=';', columns=baza_teleadresowa_jst_df.columns.tolist() + new_columns, encoding="windows-1250")
 
 
 
