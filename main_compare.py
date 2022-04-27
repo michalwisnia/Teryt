@@ -41,9 +41,13 @@ if __name__ == "__main__":
 
 	spispna_df = pd.concat([spispna_df1, spispna_df2], ignore_index=True)
 
+	spispna_df['MIEJSCOWOŚĆ'] = spispna_df['MIEJSCOWOŚĆ'].apply(lambda x: x.split('(')[0].rstrip())
+
+	print(spispna_df['MIEJSCOWOŚĆ'])
 	for index, row in result_df.iterrows():
 		kod_teryt = row['Kod_TERYT']
 		kod_pocztowy = row['Kod pocztowy']
+		miasto = row['miejscowość']
 		# print(kod_teryt)
 		res_woj = teryt_df.loc[(teryt_df['WOJ'] == kod_teryt[:2]) & (teryt_df['POW'].isna()) & (teryt_df['GMI'].isna())]
 		res_pow = teryt_df.loc[(teryt_df['WOJ'] == kod_teryt[:2]) & (teryt_df['POW'] == kod_teryt[2:4]) & (teryt_df['GMI'].isna())]
@@ -92,8 +96,8 @@ if __name__ == "__main__":
 
 		#Poczta polska
 
-		pna_row = spispna_df.loc[(spispna_df['PNA'] == kod_pocztowy)]
-
+		pna_row = spispna_df.loc[(spispna_df['PNA'] == kod_pocztowy) & (spispna_df['MIEJSCOWOŚĆ'] == miasto)]
+		#print(spispna_df['MIEJSCOWOŚĆ'])
 		if not pna_row.empty:
 			result_df.loc[index, "PNA_WOJ"] = pna_row['WOJEWÓDZTWO'].values[0]
 			result_df.loc[index, "PNA_POW"] = pna_row['POWIAT'].values[0]
