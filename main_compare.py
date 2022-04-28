@@ -49,6 +49,7 @@ if __name__ == "__main__":
 
 	spispna_df['MIEJSCOWOŚĆ'] = spispna_df['MIEJSCOWOŚĆ'].apply(lambda x: x.split('(')[0].rstrip())
 
+	load_patterns()
 	i=0
 	for index, row in result_df.iterrows():
 		kod_teryt = row['Kod_TERYT']
@@ -70,8 +71,8 @@ if __name__ == "__main__":
 
 		email = row['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
 
-		if (adres_www == 'www.kamienieczabkowicki.eu' or adres_www == 'www.powiat-olesnicki.pl' or adres_www == 'www.jawor.pl'):
-			continue
+		# if (adres_www == 'www.kamienieczabkowicki.eu' or adres_www == 'www.powiat-olesnicki.pl' or adres_www == 'www.jawor.pl'):
+		# 	continue
 
 		print(i, adres_www)
 
@@ -171,12 +172,13 @@ if __name__ == "__main__":
 
 		# print(scrap_address(kontakt_url))
 		# print(scrap_ESP(kontakt_url))
-		load_patterns()
+		# load_patterns()
 		for url in urls:
 			try:
 				headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)'}
 				response = requests.get(url, headers=headers)
 				page_body = BeautifulSoup(response.content, "html.parser")
+				page_body_str = str(page_body)
 
 				#print("zawarty email = ", check_in_page(str(email), page_body))
 				#print('--------SCRAP-------')
@@ -187,30 +189,35 @@ if __name__ == "__main__":
 				if len(scraped_email) == 0:
 					scraped_email = scrap_emails(page_body)
 					#print(f"Email:  {scraped_email}")
+
 				if (check_combinations(generate_number_combinations(tel_kier, tel_reszta), page_body)) == True:
 					scraped_tel.append(tel_kier + tel_reszta)
 					result_df.at[index, 'COMP_SCRAP_TEL'] = '1'
 				if len(scraped_tel) == 0:
-					scraped_tel = scrap_tel(page_body)
+					scraped_tel = scrap_tel(page_body_str)
 					#print(f"Telefony:  {scraped_tel}")
+
 				if (check_combinations(generate_number_combinations(fax_kier, fax_reszta), page_body)) == True:
 					scraped_fax.append(fax_kier + fax_reszta)
 					result_df.at[index, 'COMP_SCRAP_FAX'] = '1'
 				if len(scraped_fax) == 0:
-					scraped_fax = scrap_fax(page_body)
+					scraped_fax = scrap_fax(page_body_str)
 					#print(f"Fax:  {scraped_fax}")
+
 				if (check_in_page(str(kod_pocztowy), page_body)) == True:
 					scraped_address_zip_city.append(kod_pocztowy)
 					result_df.at[index, 'COMP_SCRAP_POST_CODE'] = '1'
 				if len(scraped_address_zip_city) == 0:
-					scraped_address_zip_city = scrap_address_zip_city(page_body)
+					scraped_address_zip_city = scrap_address_zip_city(page_body_str)
 					#print(f"Kod pocztowy, miasto:  {scraped_address_zip_city}")
+
 				if (check_in_page(str(email), page_body)) == True:
 					scraped_address_street.append(str(Ulica) + " " + str(Nr_domu))
 					result_df.at[index, 'COMP_SCRAP_STREET'] = '1'
 				if len(scraped_address_street) == 0:
-					scraped_address_street = scrap_address_street(page_body)
+					scraped_address_street = scrap_address_street(page_body_str)
 					#print(f"Ulica:  {scraped_address_street}")
+
 				if (check_in_page(str(esp), page_body)) == True:
 					scraped_esp = esp
 					result_df.at[index, 'COMP_SCRAP_ESP'] = '1'
@@ -259,7 +266,7 @@ if __name__ == "__main__":
 			result_df.at[index, 'COMP_SCRAP_ESP'] = '0'
 
 		i += 1
-		if i >= 250:
+		if i >= 300:
 			break;
 
 

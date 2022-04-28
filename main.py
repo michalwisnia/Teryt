@@ -44,58 +44,45 @@ def scrap_emails(soup): #do znalezienia emaili
 
         return remove_duplicates(email_list)
 
-def scrap_fax(soup):
+def scrap_fax(soup_text):
     try:
         fax_list = []
         for pattern in regex_dict.get("fax")[1]:
-            regex_strip = re.compile(pattern[0])
-            regex_search = re.compile(pattern[1])
-            result = soup.body.findAll(text=regex_search)
-            for x in result:
-                num_only = regex_strip.search(x)
+            num_only = re.compile(pattern[0]).search(soup_text)
+            if num_only:
                 fax_list.append(num_only.group().strip())
-
         return remove_duplicates(fax_list)
     except:
         return []
 
-def scrap_tel(soup):
+def scrap_tel(soup_text):
     try:
         tel_list = []
         for pattern in regex_dict.get("tel")[1]:
-            regex_strip = re.compile(pattern[0])
-            regex_search = re.compile(pattern[1])
-            result = soup.body.findAll(text=regex_search)
-            for x in result:
-                num_only = regex_strip.search(x)
+            num_only = re.compile(pattern[0]).search(soup_text)
+            if num_only:
                 tel_list.append(num_only.group().strip())
         return remove_duplicates(tel_list)
     except:
         return []
 
-def scrap_address_zip_city(soup):
+def scrap_address_zip_city(soup_text):
     try:
         address_zip_city_list = []
         for pattern in regex_dict.get("address_zip_code")[1]:
-            regex_strip = re.compile(pattern[0])
-            regex_search = re.compile(pattern[1])
-            result = soup.body.findAll(text=regex_search)
-            for x in result:
-                zip = regex_strip.search(x)
+            zip = re.compile(pattern[0]).search(soup_text)
+            if zip:
                 address_zip_city_list.append(zip.group().strip())
         return remove_duplicates(address_zip_city_list)
     except:
         return []
 
-def scrap_address_street(soup):
+def scrap_address_street(soup_text):
     try:
         address_list = []
         for pattern in regex_dict.get("address")[1]:
-            regex_strip = re.compile(pattern[0])
-            regex_search = re.compile(pattern[1])
-            result = soup.body.findAll(text=regex_search)
-            for x in result:
-                street = regex_strip.search(x)
+            street = re.compile(pattern[0]).search(soup_text)
+            if street:
                 address_list.append(street.group().strip())
         return remove_duplicates(address_list)
     except:
