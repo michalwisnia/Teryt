@@ -70,6 +70,8 @@ if __name__ == "__main__":
 
 		email = row['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
 
+		print(i, adres_www)
+
 		# print(kod_teryt)
 		res_woj = teryt_df.loc[(teryt_df['WOJ'] == kod_teryt[:2]) & (teryt_df['POW'].isna()) & (teryt_df['GMI'].isna())]
 		res_pow = teryt_df.loc[(teryt_df['WOJ'] == kod_teryt[:2]) & (teryt_df['POW'] == kod_teryt[2:4]) & (teryt_df['GMI'].isna())]
@@ -153,8 +155,9 @@ if __name__ == "__main__":
 			result_df.at[index, 'COMP_SCRAP_ESP'] = '0'
 			continue
 
+
 		urls = get_kontakt_url(adres_www)
-		print(urls)
+		#print(urls)
 
 		scraped_email = []
 		scraped_tel = []
@@ -172,10 +175,9 @@ if __name__ == "__main__":
 				response = requests.get(url, headers=headers)
 				page_body = BeautifulSoup(response.content, "html.parser")
 
-				print(email)
 				#print("zawarty email = ", check_in_page(str(email), page_body))
 				#print('--------SCRAP-------')
-				print(url)
+				#print(url)
 				if (check_in_page(str(email), page_body)) == True:
 					scraped_email.append(email)
 					result_df.at[index, 'COMP_SCRAP_MAIL'] = '1'
@@ -206,7 +208,7 @@ if __name__ == "__main__":
 				if len(scraped_address_street) == 0:
 					scraped_address_street = scrap_address_street(page_body)
 					#print(f"Ulica:  {scraped_address_street}")
-				if (check_in_page(str(scraped_esp), page_body)) == True:
+				if (check_in_page(str(esp), page_body)) == True:
 					scraped_esp = esp
 					result_df.at[index, 'COMP_SCRAP_ESP'] = '1'
 				if scraped_esp is None:
@@ -239,6 +241,7 @@ if __name__ == "__main__":
 
 
 
+
 		if not result_df.loc[index, "COMP_SCRAP_MAIL"] == "1":
 			result_df.at[index, 'COMP_SCRAP_MAIL'] = '0'
 		if not result_df.loc[index, "COMP_SCRAP_TEL"] == "1":
@@ -253,7 +256,8 @@ if __name__ == "__main__":
 			result_df.at[index, 'COMP_SCRAP_ESP'] = '0'
 
 		i += 1
-		
+		if i >= 40:
+			break;
 
 
 	f = open('out.html', 'w')
