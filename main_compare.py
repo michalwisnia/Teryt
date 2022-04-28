@@ -197,7 +197,7 @@ if __name__ == "__main__":
 					scraped_fax = scrap_fax(page_body)
 					#print(f"Fax:  {scraped_fax}")
 				if (check_in_page(str(kod_pocztowy), page_body)) == True:
-					scraped_address_zip_city = kod_pocztowy + miasto
+					scraped_address_zip_city.append(kod_pocztowy)
 					result_df.at[index, 'COMP_SCRAP_POST_CODE'] = '1'
 				if len(scraped_address_zip_city) == 0:
 					scraped_address_zip_city = scrap_address_zip_city(page_body)
@@ -233,7 +233,7 @@ if __name__ == "__main__":
 		if len(scraped_fax) != 0:
 			result_df.at[index, 'SCRAP_FAX'] = scraped_fax[0]
 		if len(scraped_address_zip_city) != 0:
-			result_df.at[index, 'SCRAP_POST_CODE'] = scraped_address_zip_city[0]
+			result_df.at[index, 'SCRAP_POST_CODE'] = scraped_address_zip_city[0][:6]
 		if len(scraped_address_street) != 0:
 			result_df.at[index, 'SCRAP_STREET'] = scraped_address_street[0]
 
