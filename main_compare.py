@@ -70,6 +70,9 @@ if __name__ == "__main__":
 
 		email = row['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
 
+		if (adres_www == 'www.kamienieczabkowicki.eu' or adres_www == 'www.powiat-olesnicki.pl' or adres_www == 'www.jawor.pl'):
+			continue
+
 		print(i, adres_www)
 
 		# print(kod_teryt)
@@ -256,7 +259,7 @@ if __name__ == "__main__":
 			result_df.at[index, 'COMP_SCRAP_ESP'] = '0'
 
 		i += 1
-		if i >= 40:
+		if i >= 100:
 			break;
 
 
