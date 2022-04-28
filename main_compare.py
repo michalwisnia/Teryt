@@ -259,16 +259,16 @@ if __name__ == "__main__":
 			result_df.at[index, 'COMP_SCRAP_ESP'] = '0'
 
 		i += 1
-		if i >= 100:
+		if i >= 250:
 			break;
 
 
-	f = open('out.html', 'w')
+	f = open('out.html', 'w', encoding="utf-8")
 	a = result_df.to_html()
 	f.write(a)
 	f.close()
 
-	result_df.to_csv('out.csv', index=False, sep=';', columns=baza_teleadresowa_jst_df.columns.tolist() + new_columns, encoding="windows-1250")
+	result_df.to_csv('out.csv', index=False, sep=';', columns=baza_teleadresowa_jst_df.columns.tolist() + new_columns, encoding="utf-8")
 
 
 
