@@ -140,6 +140,10 @@ def get_kontakt_url(adres_www):
 		except requests.exceptions.RequestException as e:
 			print("blad")
 			# continue
+		except:
+			print("blad")
+	except:
+		print("blad")
 
 	urls.append(url)
 
