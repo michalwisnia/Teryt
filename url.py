@@ -53,40 +53,43 @@ def get_kontakt_url(adres_www):
 			a = soup.select_one("a[href*=bip]")
 			href = a.get('href')
 			# print(href)
-			if href.startswith("http"):
-				bip_url = href
-				urls.append(bip_url)
-				# print(bip_url)
-			else:
-				bip_url = url + href
-				urls.append(bip_url)
-				# print(bip_url)
+			if href is not None:
+				if href.startswith("http"):
+					bip_url = href
+					urls.append(bip_url)
+					# print(bip_url)
+				else:
+					bip_url = url + href
+					urls.append(bip_url)
+					# print(bip_url)
 		elif soup.select_one("a[href*=biuletyn]") is not None:
 			a = soup.select_one("a[href*=biuletyn]")
 			href = a.get('href')
 			# print(href)
-			if href.startswith("http"):
-				bip_url = href
-				urls.append(bip_url)
-				# print(bip_url)
-			else:
-				bip_url = url + href
-				urls.append(bip_url)
-				# print(bip_url)
+			if href is not None:
+				if href.startswith("http"):
+					bip_url = href
+					urls.append(bip_url)
+					# print(bip_url)
+				else:
+					bip_url = url + href
+					urls.append(bip_url)
+					# print(bip_url)
 
 		if soup.find("a", string=re.compile("[kK]ontakt")):
 			a = soup.find("a", string=re.compile("[kK]ontakt"))
 			href = a.get('href')
-			if href.startswith("http"):
-				kontakt_url = href
-			elif href.startswith("/pl") and url.endswith("pl/"):
-				kontakt_url = url[:-3] + href
-			elif not href.startswith("/") and not url.endswith("/"):
-				kontakt_url = url + "/" + href
-			else:
-				kontakt_url = url + href
-			# print(kontakt_url)
-			urls.append(kontakt_url)
+			if href is not None:
+				if href.startswith("http"):
+					kontakt_url = href
+				elif href.startswith("/pl") and url.endswith("pl/"):
+					kontakt_url = url[:-3] + href
+				elif not href.startswith("/") and not url.endswith("/"):
+					kontakt_url = url + "/" + href
+				else:
+					kontakt_url = url + href
+				# print(kontakt_url)
+				urls.append(kontakt_url)
 
 		if bip_url is not None:
 			bip_url_response = requests.get(bip_url)
@@ -105,38 +108,41 @@ def get_kontakt_url(adres_www):
 				a = soup.select_one("a[href*=bip]")
 				href = a.get('href')
 				# print(href)
-				if href.startswith("http"):
-					bip_url = href
-					urls.append(bip_url)
-					# print(bip_url)
-				else:
-					bip_url = url + href
-					urls.append(bip_url)
-					# print(bip_url)
+				if href is not None:
+					if href.startswith("http"):
+						bip_url = href
+						urls.append(bip_url)
+						# print(bip_url)
+					else:
+						bip_url = url + href
+						urls.append(bip_url)
+						# print(bip_url)
 			elif soup.select_one("a[href*=biuletyn]") is not None:
 				a = soup.select_one("a[href*=biuletyn]")
 				href = a.get('href')
 				# print(href)
-				if href.startswith("http"):
-					bip_url = href
-					urls.append(bip_url)
-					# print(bip_url)
-				else:
-					bip_url = url + href
-					urls.append(bip_url)
-					# print(bip_url)
+				if href is not None:
+					if href.startswith("http"):
+						bip_url = href
+						urls.append(bip_url)
+						# print(bip_url)
+					else:
+						bip_url = url + href
+						urls.append(bip_url)
+						# print(bip_url)
 
 			if soup.find("a", string=re.compile("[kK]ontakt")):
 				a = soup.find("a", string=re.compile("[kK]ontakt"))
 				href = a.get('href')
-				if href.startswith("http"):
-					kontakt_url = href
-				elif href.startswith("/pl") and url.endswith("pl/"):
-					kontakt_url = url[:-3] + href
-				else:
-					kontakt_url = url + href
-				# print(kontakt_url)
-				urls.append(kontakt_url)
+				if href is not None:
+					if href.startswith("http"):
+						kontakt_url = href
+					elif href.startswith("/pl") and url.endswith("pl/"):
+						kontakt_url = url[:-3] + href
+					else:
+						kontakt_url = url + href
+					# print(kontakt_url)
+					urls.append(kontakt_url)
 		except requests.exceptions.RequestException as e:
 			print("blad")
 			# continue
