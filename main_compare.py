@@ -62,8 +62,8 @@ if __name__ == "__main__":
 		adres_www = row['adres www jednostki']
 
 		tel_kier = row['telefon kierunkowy']
-		tel_reszta = row['telefon']
-		tel_reszta2 = row['telefon 2']
+		tel_reszta = str(row['telefon'])
+		tel_reszta2 = str(row['telefon 2'])
 
 		fax_kier = row['FAX kierunkowy']
 		fax_reszta = row['FAX']
@@ -239,9 +239,9 @@ if __name__ == "__main__":
 		if len(scraped_email) != 0:
 			result_df.at[index, 'SCRAP_MAIL'] = scraped_email[0]
 		if len(scraped_tel) != 0:
-			result_df.at[index, 'SCRAP_TEL'] = scraped_tel[0]
+			result_df.at[index, 'SCRAP_TEL'] = ''.join(i for i in scraped_tel[0] if i.isdigit())
 		if len(scraped_fax) != 0:
-			result_df.at[index, 'SCRAP_FAX'] = scraped_fax[0]
+			result_df.at[index, 'SCRAP_FAX'] = ''.join(i for i in scraped_fax[0] if i.isdigit())
 		if len(scraped_address_zip_city) != 0:
 			result_df.at[index, 'SCRAP_POST_CODE'] = scraped_address_zip_city[0][:6]
 		if len(scraped_address_street) != 0:
@@ -266,7 +266,7 @@ if __name__ == "__main__":
 			result_df.at[index, 'COMP_SCRAP_ESP'] = '0'
 
 		i += 1
-		if i >= 300:
+		if i >= 10:
 			break;
 
 
