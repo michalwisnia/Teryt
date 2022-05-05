@@ -5,6 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from url import get_kontakt_url, check_url
+from itertools import islice
 
 terytTypes = {
     'WOJ': 'object', 'POW': 'object', 'GMI': 'object', 'RODZ': 'object', 'NAZWA': 'object', 'NAZWA_DOD': 'object', 'STAN_NA': 'object'
@@ -51,7 +52,7 @@ if __name__ == "__main__":
 
 	load_patterns()
 	i=0
-	for index, row in result_df.iterrows():
+	for index, row in islice(result_df.iterrows(), 0, None):
 		kod_teryt = row['Kod_TERYT']
 		kod_pocztowy = row['Kod pocztowy']
 		miasto = row['miejscowość']
@@ -65,14 +66,14 @@ if __name__ == "__main__":
 		tel_reszta = str(row['telefon'])
 		tel_reszta2 = str(row['telefon 2'])
 
-		fax_kier = row['FAX kierunkowy']
-		fax_reszta = row['FAX']
+		fax_kier = str(row['FAX kierunkowy'])
+		fax_reszta = str(row['FAX'])
 		esp = row['ESP']
 
 		email = row['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
 
-		# if (adres_www == 'www.kamienieczabkowicki.eu' or adres_www == 'www.powiat-olesnicki.pl' or adres_www == 'www.jawor.pl'):
-		# 	continue
+		if (adres_www == 'http://www.ugnowemiasto.pl/' or adres_www == 'www.zbuczyn.pl'):
+		   continue
 
 		print(i, adres_www)
 
@@ -266,8 +267,8 @@ if __name__ == "__main__":
 			result_df.at[index, 'COMP_SCRAP_ESP'] = '0'
 
 		i += 1
-		if i >= 10:
-			break;
+		#if i >= 10:
+			#break;
 
 
 	f = open('out.html', 'w', encoding="utf-8")
@@ -275,7 +276,7 @@ if __name__ == "__main__":
 	f.write(a)
 	f.close()
 
-	result_df.to_csv('out.csv', index=False, sep=';', columns=baza_teleadresowa_jst_df.columns.tolist() + new_columns, encoding="utf-8")
+	result_df.to_csv('out.csv', index=False, sep=';', columns=baza_teleadresowa_jst_df.columns.tolist() + new_columns, encoding="windows-1250")
 
 
 
