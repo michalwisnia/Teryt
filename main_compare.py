@@ -72,8 +72,8 @@ if __name__ == "__main__":
 
 		email = row['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
 
-		if (adres_www == 'http://www.ugnowemiasto.pl/' or adres_www == 'www.zbuczyn.pl'):
-		   continue
+		# if (adres_www == 'http://www.ugnowemiasto.pl/' or adres_www == 'www.zbuczyn.pl'):
+		#    continue
 
 		print(i, adres_www)
 
@@ -276,7 +276,7 @@ if __name__ == "__main__":
 	f.write(a)
 	f.close()
 
-	result_df.to_csv('out.csv', index=False, sep=';', columns=baza_teleadresowa_jst_df.columns.tolist() + new_columns, encoding="windows-1250")
+	result_df.to_csv('out.csv', index=False, sep=';', columns=baza_teleadresowa_jst_df.columns.tolist() + new_columns, encoding="windows-1250", errors='ignore')
 
 
 
