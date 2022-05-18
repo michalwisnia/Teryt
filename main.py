@@ -136,6 +136,8 @@ def check_combinations(combinations, soup):
         #print("blad strony")
         #print("not found")
         return False
+    except:
+        return False
 
 dtypes = {
     'Kod_TERYT': 'object', 'nazwa_samorządu': 'object', 'Województwo': 'object', 'Powiat': 'object', 'typ_JST': 'object',
