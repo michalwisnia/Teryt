@@ -53,24 +53,24 @@ if __name__ == "__main__":
 	load_patterns()
 	i=0
 	for index, row in islice(result_df.iterrows(), 0, None):
-		kod_teryt = row['Kod_TERYT']
-		kod_pocztowy = row['Kod pocztowy']
-		miasto = row['miejscowość']
+		kod_teryt = repr(row['Kod_TERYT'])
+		kod_pocztowy = repr(row['Kod pocztowy'])
+		miasto = repr(['miejscowość'])
 
-		poczta = row['poczta']
-		Ulica = row['Ulica']
-		Nr_domu = row['Nr domu']
+		poczta = repr(row['poczta'])
+		Ulica = repr(row['Ulica'])
+		Nr_domu = repr(row['Nr domu'])
 		adres_www = row['adres www jednostki']
 
-		tel_kier = row['telefon kierunkowy']
-		tel_reszta = str(row['telefon'])
-		tel_reszta2 = str(row['telefon 2'])
+		tel_kier = repr(row['telefon kierunkowy'])
+		tel_reszta = repr(str(row['telefon']))
+		tel_reszta2 = repr(str(row['telefon 2']))
 
-		fax_kier = str(row['FAX kierunkowy'])
-		fax_reszta = str(row['FAX'])
-		esp = row['ESP']
+		fax_kier = repr(str(row['FAX kierunkowy']))
+		fax_reszta = repr(str(row['FAX']))
+		esp = repr(row['ESP'])
 
-		email = row['ogólny adres poczty elektronicznej gminy/powiatu/województwa']
+		email = repr(row['ogólny adres poczty elektronicznej gminy/powiatu/województwa'])
 
 		# if (adres_www == 'http://www.ugnowemiasto.pl/' or adres_www == 'www.zbuczyn.pl'):
 		#    continue
@@ -212,7 +212,8 @@ if __name__ == "__main__":
 					scraped_address_zip_city = scrap_address_zip_city(page_body_str)
 					#print(f"Kod pocztowy, miasto:  {scraped_address_zip_city}")
 
-				if (check_in_page(str(email), page_body)) == True:
+				adres_nr = Ulica + " " + Nr_domu
+				if (check_in_page(adres_nr, page_body)) == True:
 					scraped_address_street.append(str(Ulica) + " " + str(Nr_domu))
 					result_df.at[index, 'COMP_SCRAP_STREET'] = '1'
 				if len(scraped_address_street) == 0:
