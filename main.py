@@ -100,6 +100,7 @@ def check_in_page(text, soup): #do odszukania tekstu na stronie
 def generate_number_combinations(tel_kier, tel_reszta):
     combinations = []
     combinations.append(tel_kier+tel_reszta)
+    combinations.append("0" + tel_kier + tel_reszta)
     combinations.append(tel_kier + " " + tel_reszta)
     combinations.append(tel_kier + "-" + tel_reszta)
     combinations.append(tel_kier + tel_reszta[0]+"-"+tel_reszta[1:4]+"-"+tel_reszta[4:7])
@@ -111,17 +112,29 @@ def generate_number_combinations(tel_kier, tel_reszta):
     combinations.append(tel_kier + " " + tel_reszta[0:2] + "-" + tel_reszta[2:4] + "-" + tel_reszta[5:7])
     combinations.append(tel_kier + " " + tel_reszta[0:4] + " " + tel_reszta[4:7])
     combinations.append(tel_kier + " " + tel_reszta[0:4] + "-" + tel_reszta[4:7])
+    combinations.append(tel_kier + " " + tel_reszta[0:4] + " - " + tel_reszta[4:7])
     combinations.append("\(+48 "+ tel_kier + "\) " + tel_reszta[0:2] + " " + tel_reszta[2:4] + " " + tel_reszta[4:7]) #wywala?
     combinations.append("\(+48 "+ tel_kier + "\) " + tel_reszta[0:3] + "-" + tel_reszta[3:5] + " " + tel_reszta[5:7]) #wywala?
     combinations.append("\(+48 "+ tel_kier + "\) " + tel_reszta) #wywala?
 
     combinations.append(tel_kier+"\)" + " " + tel_reszta[0:2] + " " + tel_reszta[2:4] + " " + tel_reszta[4:7])
     combinations.append(tel_kier+"\)" + " " + tel_reszta[0:3] + " " + tel_reszta[3:5] + " " + tel_reszta[5:7])
-    combinations.append(tel_kier+"\)" + " " + tel_reszta[0:4] + "-" + tel_reszta[4:7])
+    combinations.append(tel_kier+"\)" + " " + tel_reszta[0:2] + " " + tel_reszta[2:5] + " " + tel_reszta[5:7])
+    combinations.append(tel_kier+"\)" + " " + tel_reszta[0:3] + "-" + tel_reszta[3:5] + "-" + tel_reszta[5:7])
 
+    combinations.append(tel_kier+"\)" + " " + tel_reszta[0:4] + "-" + tel_reszta[4:7])
+    combinations.append(tel_kier+"\)" + " " + tel_reszta)
+
+    combinations.append(tel_kier+"\)" + " " + tel_reszta[0:1] + "-" + tel_reszta[1:4] + " " + tel_reszta[4:7])
+
+    combinations.append(tel_kier +"\)" + tel_reszta)
     combinations.append(tel_kier + "/ " + tel_reszta[0:3] + " " + tel_reszta[3:5] + " " + tel_reszta[5:7])
+    combinations.append(tel_kier + "/ " + tel_reszta[0:3] + "-" + tel_reszta[3:5] + "-" + tel_reszta[5:7])
+    combinations.append(tel_kier + "/ " + tel_reszta[0:3] + "- " + tel_reszta[3:5] + "- " + tel_reszta[5:7])
 
     combinations.append(tel_kier + " " + tel_reszta[0:2] + "-" + tel_reszta[2:4] + "-" + tel_reszta[4:7])
+
+
 
     return combinations
 
