@@ -91,9 +91,6 @@ def get_kontakt_url(adres_www):
 				# print(kontakt_url)
 				urls.append(kontakt_url)
 
-		if bip_url is not None:
-			bip_url_response = requests.get(bip_url)
-			# print(bip_url_response.status_code)
 	except requests.exceptions.RequestException as e:
 		try:
 			url = e.request.url
