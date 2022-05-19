@@ -95,7 +95,10 @@ def scrap_ESP(soup):
             return esp.group(0)
 
 def check_in_page(text, soup): #do odszukania tekstu na stronie
-    return bool(soup.find(text=re.compile(text)))
+    try:
+        return bool(soup.find(text=re.compile(text)))
+    except:
+        return False
 
 def generate_number_combinations(tel_kier, tel_reszta):
     combinations = []

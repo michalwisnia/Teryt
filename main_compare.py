@@ -212,7 +212,7 @@ if __name__ == "__main__":
 					scraped_address_zip_city = scrap_address_zip_city(page_body_str)
 					#print(f"Kod pocztowy, miasto:  {scraped_address_zip_city}")
 
-				adres_nr = str(Ulica) + " " + repr(str(Nr_domu))
+				adres_nr = str(Ulica) + " " + str(Nr_domu)
 				if (check_in_page(adres_nr, page_body)) == True:
 					scraped_address_street.append(str(Ulica) + " " + str(Nr_domu))
 					result_df.at[index, 'COMP_SCRAP_STREET'] = '1'
