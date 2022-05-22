@@ -212,12 +212,20 @@ if __name__ == "__main__":
 					scraped_address_zip_city = scrap_address_zip_city(page_body_str)
 					#print(f"Kod pocztowy, miasto:  {scraped_address_zip_city}")
 
-				adres_nr = str(Ulica) + " " + str(Nr_domu)
+				if str(Ulica).endswith(' '):
+					adres_nr = str(Ulica) + str(Nr_domu)
+				else:
+					adres_nr = str(Ulica) + " " + str(Nr_domu)
+
 				if (check_in_page(adres_nr, page_body)) == True:
-					scraped_address_street.append(str(Ulica) + " " + str(Nr_domu))
+					scraped_address_street.append(adres_nr)
 					result_df.at[index, 'COMP_SCRAP_STREET'] = '1'
 				if len(scraped_address_street) == 0:
 					scraped_address_street = scrap_address_street(page_body_str)
+					if adres_nr.lower().replace(" ", "") in [adres.lower().replace(" ", "") for adres in scraped_address_street]:
+						scraped_address_street.clear()
+						scraped_address_street.append(adres_nr)
+						result_df.at[index, 'COMP_SCRAP_STREET'] = '1'
 					#print(f"Ulica:  {scraped_address_street}")
 
 				if (check_in_page(str(esp), page_body)) == True:

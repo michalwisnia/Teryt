@@ -18,7 +18,7 @@ def load_patterns():
         tmp = []
         tmp.append(regex_dict[key][0])
         tmp.append([])
-        data_file = open(f"regex_patterns/{regex_dict[key][0]}", "r")
+        data_file = open(f"regex_patterns/{regex_dict[key][0]}", "r", encoding="utf-8")
         for pattern in data_file.read().split('\n'):
             tmp[1].append([pattern, ".*" + pattern + ".*"])
         regex_dict.update({key: tmp})
