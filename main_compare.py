@@ -214,15 +214,17 @@ if __name__ == "__main__":
 
 				if str(Ulica).endswith(' '):
 					adres_nr = str(Ulica) + str(Nr_domu)
+					adres_nr_cut = str(Ulica).split(" ")[-1] + str(Nr_domu)
 				else:
 					adres_nr = str(Ulica) + " " + str(Nr_domu)
+					adres_nr_cut = str(Ulica).split(" ")[-1] + " " + str(Nr_domu)
 
-				if (check_in_page(adres_nr, page_body)) == True:
+				if (check_in_page(adres_nr_cut, page_body)) == True:
 					scraped_address_street.append(adres_nr)
 					result_df.at[index, 'COMP_SCRAP_STREET'] = '1'
 				if len(scraped_address_street) == 0:
 					scraped_address_street = scrap_address_street(page_body_str)
-					if adres_nr.lower().replace(" ", "") in [adres.lower().replace(" ", "") for adres in scraped_address_street]:
+					if adres_nr_cut.lower().replace(" ", "") in [adres.lower().replace(" ", "") for adres in scraped_address_street]:
 						scraped_address_street.clear()
 						scraped_address_street.append(adres_nr)
 						result_df.at[index, 'COMP_SCRAP_STREET'] = '1'
