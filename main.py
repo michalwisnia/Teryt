@@ -158,6 +158,15 @@ def check_combinations(combinations, soup):
     except:
         return False
 
+def prepare_numbers(scraped_numbers):
+    numbers = []
+    for number in scraped_numbers:
+        temp_number = re.findall("\d+", number)
+        temp_number = ''.join(temp_number)
+        temp_number = temp_number[len(temp_number) - 9:]
+        numbers.append(temp_number)
+    return numbers
+
 dtypes = {
     'Kod_TERYT': 'object', 'nazwa_samorządu': 'object', 'Województwo': 'object', 'Powiat': 'object', 'typ_JST': 'object',
     'nazwa_urzędu_JST': 'object', 'miejscowość': 'object', 'Kod pocztowy': 'object', 'poczta': 'object','Ulica': 'object',

@@ -1,5 +1,5 @@
 import pandas as pd
-from main import dtypes
+from main import dtypes, prepare_numbers
 from main import regex_dict, load_patterns, remove_duplicates, scrap_emails, scrap_fax, scrap_tel, scrap_address_zip_city, scrap_address_street, scrap_ESP, check_in_page, generate_number_combinations, check_combinations
 import requests
 from bs4 import BeautifulSoup
@@ -184,33 +184,54 @@ if __name__ == "__main__":
 				#print("zawarty email = ", check_in_page(str(email), page_body))
 				#print('--------SCRAP-------')
 				#print(url)
-				if (check_in_page(str(email), page_body)) == True:
-					scraped_email.append(email)
-					result_df.at[index, 'COMP_SCRAP_MAIL'] = '1'
-				if len(scraped_email) == 0:
-					scraped_email = scrap_emails(page_body)
-					#print(f"Email:  {scraped_email}")
 
-				if (check_combinations(generate_number_combinations(tel_kier, tel_reszta), page_body)) == True:
-					scraped_tel.append(tel_kier + tel_reszta)
-					result_df.at[index, 'COMP_SCRAP_TEL'] = '1'
-				if len(scraped_tel) == 0:
-					scraped_tel = scrap_tel(page_body_str)
-					#print(f"Telefony:  {scraped_tel}")
+				if not result_df.loc[index, "COMP_SCRAP_MAIL"] == "1":
+					if (check_in_page(str(email), page_body)) == True:
+						scraped_email.append(email)
+						result_df.at[index, 'COMP_SCRAP_MAIL'] = '1'
+					if not result_df.loc[index, "COMP_SCRAP_MAIL"] == "1":
+						scraped_email += scrap_emails(page_body)
+						if email in scraped_email:
+							scraped_email.clear()
+							scraped_email.append(email)
+							result_df.at[index, 'COMP_SCRAP_MAIL'] = '1'
+						#print(f"Email:  {scraped_email}")
 
-				if (check_combinations(generate_number_combinations(fax_kier, fax_reszta), page_body)) == True:
-					scraped_fax.append(fax_kier + fax_reszta)
-					result_df.at[index, 'COMP_SCRAP_FAX'] = '1'
-				if len(scraped_fax) == 0:
-					scraped_fax = scrap_fax(page_body_str)
-					#print(f"Fax:  {scraped_fax}")
+				if not result_df.loc[index, "COMP_SCRAP_TEL"] == "1":
+					if (check_combinations(generate_number_combinations(tel_kier, tel_reszta), page_body)) == True:
+						scraped_tel.append(tel_kier + tel_reszta)
+						result_df.at[index, 'COMP_SCRAP_TEL'] = '1'
+					if not result_df.loc[index, "COMP_SCRAP_TEL"] == "1":
+						scraped_tel += prepare_numbers(scrap_tel(page_body_str))
+						if (tel_kier + tel_reszta) in scraped_tel:
+							scraped_tel.clear()
+							scraped_tel.append(tel_kier + tel_reszta)
+							result_df.at[index, 'COMP_SCRAP_TEL'] = '1'
+							#print(f"Telefony:  {scraped_tel}")
 
-				if (check_in_page(str(kod_pocztowy), page_body)) == True:
-					scraped_address_zip_city.append(kod_pocztowy)
-					result_df.at[index, 'COMP_SCRAP_POST_CODE'] = '1'
-				if len(scraped_address_zip_city) == 0:
-					scraped_address_zip_city = scrap_address_zip_city(page_body_str)
-					#print(f"Kod pocztowy, miasto:  {scraped_address_zip_city}")
+				if not result_df.loc[index, "COMP_SCRAP_FAX"] == "1":
+					if (check_combinations(generate_number_combinations(fax_kier, fax_reszta), page_body)) == True:
+						scraped_fax.append(fax_kier + fax_reszta)
+						result_df.at[index, 'COMP_SCRAP_FAX'] = '1'
+					if not result_df.loc[index, "COMP_SCRAP_FAX"] == "1":
+						scraped_fax += prepare_numbers(scrap_fax(page_body_str))
+						if (fax_kier + fax_reszta) in scraped_fax:
+							scraped_fax.clear()
+							scraped_fax.append(fax_kier + fax_reszta)
+							result_df.at[index, 'COMP_SCRAP_FAX'] = '1'
+							#print(f"Fax:  {scraped_fax}")
+
+				if not result_df.loc[index, "COMP_SCRAP_POST_CODE"] == "1":
+					if (check_in_page(str(kod_pocztowy), page_body)) == True:
+						scraped_address_zip_city.append(kod_pocztowy)
+						result_df.at[index, 'COMP_SCRAP_POST_CODE'] = '1'
+					if not result_df.loc[index, "COMP_SCRAP_POST_CODE"] == "1":
+						scraped_address_zip_city += scrap_address_zip_city(page_body_str)
+						if kod_pocztowy in [x[:6] for x in scraped_address_zip_city]:
+							scraped_address_zip_city.clear()
+							scraped_address_zip_city.append(kod_pocztowy)
+							result_df.at[index, 'COMP_SCRAP_POST_CODE'] = '1'
+						#print(f"Kod pocztowy, miasto:  {scraped_address_zip_city}")
 
 				if str(Ulica).endswith(' '):
 					adres_nr = str(Ulica) + str(Nr_domu)
@@ -219,31 +240,40 @@ if __name__ == "__main__":
 					adres_nr = str(Ulica) + " " + str(Nr_domu)
 					adres_nr_cut = str(Ulica).split(" ")[-1] + " " + str(Nr_domu)
 
-				if (check_in_page(adres_nr_cut, page_body)) == True:
-					scraped_address_street.append(adres_nr)
-					result_df.at[index, 'COMP_SCRAP_STREET'] = '1'
-				if len(scraped_address_street) == 0:
-					scraped_address_street = scrap_address_street(page_body_str)
-					if adres_nr_cut.lower().replace(" ", "") in [adres.lower().replace(" ", "") for adres in scraped_address_street]:
-						scraped_address_street.clear()
+				if not result_df.loc[index, "COMP_SCRAP_STREET"] == "1":
+					if (check_in_page(adres_nr_cut, page_body)) == True:
 						scraped_address_street.append(adres_nr)
 						result_df.at[index, 'COMP_SCRAP_STREET'] = '1'
+					if not result_df.loc[index, "COMP_SCRAP_STREET"] == "1":
+						scraped_address_street += scrap_address_street(page_body_str)
+						if adres_nr.lower().replace(" ", "") in [adres.lower().replace(" ", "") for adres in scraped_address_street]:
+							scraped_address_street.clear()
+							scraped_address_street.append(adres_nr)
+							result_df.at[index, 'COMP_SCRAP_STREET'] = '1'
 					#print(f"Ulica:  {scraped_address_street}")
 
-				if (check_in_page(str(esp), page_body)) == True:
-					scraped_esp = esp
-					result_df.at[index, 'COMP_SCRAP_ESP'] = '1'
-				if scraped_esp is None:
-					scraped_esp = scrap_ESP(page_body)
-					#print(f"Skrytka:  {scraped_esp}")
+				if not result_df.loc[index, "COMP_SCRAP_ESP"] == "1":
+					if (check_in_page(str(esp), page_body)) == True:
+						scraped_esp = esp
+						result_df.at[index, 'COMP_SCRAP_ESP'] = '1'
+					if not result_df.loc[index, "COMP_SCRAP_ESP"] == "1":
+						scraped_esp = scrap_ESP(page_body)
+						if str(esp) == scraped_esp:
+							result_df.at[index, 'COMP_SCRAP_ESP'] = '1'
+						#print(f"Skrytka:  {scraped_esp}")
 
 
 
 			except requests.exceptions.RequestException as e:
 				print("blad strony")
 
-			if len(scraped_email) != 0 and len(scraped_tel) != 0 and len(scraped_fax) != 0 and len(
-					scraped_address_zip_city) != 0 and len(scraped_address_street) != 0 and scraped_esp is not None:
+			# if len(scraped_email) != 0 and len(scraped_tel) != 0 and len(scraped_fax) != 0 and len(
+			# 		scraped_address_zip_city) != 0 and len(scraped_address_street) != 0 and scraped_esp is not None:
+			# 	break
+
+			if result_df.loc[index, "COMP_SCRAP_MAIL"] == "1" and result_df.loc[index, "COMP_SCRAP_TEL"] == "1" \
+					and result_df.loc[index, "COMP_SCRAP_FAX"] == "1" and result_df.loc[index, "COMP_SCRAP_POST_CODE"] == "1"\
+					and result_df.loc[index, "COMP_SCRAP_STREET"] == "1" and result_df.loc[index, "COMP_SCRAP_ESP"] == "1":
 				break
 
 		result_df.at[index, 'SCRAP_URL'] = adres_www
