@@ -1,3 +1,5 @@
+import sys
+
 import pandas as pd
 from main import dtypes, prepare_numbers
 from main import regex_dict, load_patterns, remove_duplicates, scrap_emails, scrap_fax, scrap_tel, scrap_address_zip_city, scrap_address_street, scrap_ESP, check_in_page, generate_number_combinations, check_combinations
@@ -51,8 +53,17 @@ if __name__ == "__main__":
 	spispna_df['MIEJSCOWOŚĆ'] = spispna_df['MIEJSCOWOŚĆ'].apply(lambda x: x.split('(')[0].rstrip())
 
 	load_patterns()
+	step = len(result_df)
+
+	if len(sys.argv) == 2:
+		step = int(sys.argv[1])
+		if step > len(result_df):
+			step = len(result_df)
 	i=0
 	for index, row in islice(result_df.iterrows(), 0, None):
+		if i in range(0, len(result_df), step):
+			print(f"Przetwarzanie wierszy {i}-{i+step}")
+		i += 1
 		kod_teryt = row['Kod_TERYT']
 		kod_pocztowy = row['Kod pocztowy']
 		miasto = row['miejscowość']
@@ -75,7 +86,7 @@ if __name__ == "__main__":
 		# if (adres_www == 'http://www.ugnowemiasto.pl/' or adres_www == 'www.zbuczyn.pl'):
 		#    continue
 
-		print(i, adres_www)
+		# print(i, adres_www)
 
 		# print(kod_teryt)
 		res_woj = teryt_df.loc[(teryt_df['WOJ'] == kod_teryt[:2]) & (teryt_df['POW'].isna()) & (teryt_df['GMI'].isna())]
@@ -265,7 +276,7 @@ if __name__ == "__main__":
 
 
 			except requests.exceptions.RequestException as e:
-				print("blad strony")
+				print(f"blad strony {url}")
 
 			# if len(scraped_email) != 0 and len(scraped_tel) != 0 and len(scraped_fax) != 0 and len(
 			# 		scraped_address_zip_city) != 0 and len(scraped_address_street) != 0 and scraped_esp is not None:
@@ -307,17 +318,24 @@ if __name__ == "__main__":
 		if not result_df.loc[index, "COMP_SCRAP_ESP"] == "1":
 			result_df.at[index, 'COMP_SCRAP_ESP'] = '0'
 
-		i += 1
-		#if i >= 10:
+
+
+		if i in range(step, len(result_df), step):
+			result_df.to_csv(f"output/out_{i}.csv", index=False, sep=';',
+							 columns=baza_teleadresowa_jst_df.columns.tolist() + new_columns, encoding="windows-1250",
+							 errors='ignore')
+			print(f"Zapisano plik output/out_{i}.csv")
+
+	#if i >= 10:
 			#break;
 
 
-	f = open('out.html', 'w', encoding="utf-8")
+	f = open('output/out.html', 'w', encoding="utf-8")
 	a = result_df.to_html()
 	f.write(a)
 	f.close()
 
-	result_df.to_csv('out.csv', index=False, sep=';', columns=baza_teleadresowa_jst_df.columns.tolist() + new_columns, encoding="windows-1250", errors='ignore')
+	result_df.to_csv('output/out.csv', index=False, sep=';', columns=baza_teleadresowa_jst_df.columns.tolist() + new_columns, encoding="windows-1250", errors='ignore')
 
 
 
