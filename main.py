@@ -9,10 +9,10 @@ regex_dict = {
     "tel": ['tel.txt'],
     "address_zip_code": ['kod_miasto.txt'],
     "address": ['adres.txt'],
-    "fax": ['fax.txt']
+    "fax": ['fax.txt'] #pliki zawierające wyrażenia regularne
 }
 
-def load_patterns():
+def load_patterns(): #aby załadować wyrażenia regularne z plików
     global regex_dict
     for key in regex_dict:
         tmp = []
@@ -24,7 +24,7 @@ def load_patterns():
         regex_dict.update({key: tmp})
         data_file.close()
 
-def remove_duplicates(list):
+def remove_duplicates(list): #aby nie powtarzały się elementy w listach
     res = []
     [res.append(x) for x in list if x not in res]
     return res
@@ -100,7 +100,7 @@ def check_in_page(text, soup): #do odszukania tekstu na stronie
     except:
         return False
 
-def generate_number_combinations(tel_kier, tel_reszta):
+def generate_number_combinations(tel_kier, tel_reszta): #wygenerowanie różnych kombinacji numerów
     combinations = []
     combinations.append(tel_kier+tel_reszta)
     combinations.append("0" + tel_kier + tel_reszta)
@@ -150,7 +150,7 @@ def check_combinations(combinations, soup):
         for c in combinations:
             if bool(soup.find(text=re.compile(c))) == True:
                 #print("found ",c)
-                return True
+                return True #przerwanie aby nie sprawdzać reszty kombinacji
     except requests.exceptions.RequestException as e:
         #print("blad strony")
         #print("not found")

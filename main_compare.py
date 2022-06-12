@@ -19,7 +19,7 @@ new_columns = ['TERYT_WOJ', 'TERYT_POW', 'TERYT_NAZWA_SAMORZAU', 'TERYT_TYP_JST'
                'COMP_PNA_WOJ', 'COMP_PNA_POW', 'COMP_PNA_GMI',
                'SCRAP_URL', 'SCRAP_MAIL', 'SCRAP_TEL', 'SCRAP_FAX', 'SCRAP_POST_CODE', 'SCRAP_STREET', 'SCRAP_ESP',
                'COMP_SCRAP_URL', 'COMP_SCRAP_MAIL', 'COMP_SCRAP_TEL', 'COMP_SCRAP_FAX', 'COMP_SCRAP_POST_CODE', 'COMP_SCRAP_STREET', 'COMP_SCRAP_ESP']
-
+#nowe kolumny do dataframe'ów
 typ_JST_dict = {
     "gmina miejsko-wiejska": 'GMW',
     "gmina miejska": 'GM',
@@ -48,9 +48,9 @@ if __name__ == "__main__":
 
 	spispna_df2 = pd.read_csv("data/spispna_miejscowosci2.csv", sep=";",  encoding="windows-1250", dtype=spispnaTypes)
 
-	spispna_df = pd.concat([spispna_df1, spispna_df2], ignore_index=True)
+	spispna_df = pd.concat([spispna_df1, spispna_df2], ignore_index=True) #aby połączyć oba pliki spisu pna które mają rozdzielone dane
 
-	spispna_df['MIEJSCOWOŚĆ'] = spispna_df['MIEJSCOWOŚĆ'].apply(lambda x: x.split('(')[0].rstrip())
+	spispna_df['MIEJSCOWOŚĆ'] = spispna_df['MIEJSCOWOŚĆ'].apply(lambda x: x.split('(')[0].rstrip()) #odrzucenie niepotrzebnej informacji po nawiasie
 
 	load_patterns()
 	step = len(result_df)
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
 		#Poczta polska
 
-		pna_row = spispna_df.loc[(spispna_df['PNA'] == kod_pocztowy) & (spispna_df['MIEJSCOWOŚĆ'] == miasto)]
+		pna_row = spispna_df.loc[(spispna_df['PNA'] == kod_pocztowy) & (spispna_df['MIEJSCOWOŚĆ'] == miasto)] #do odszukania odpowiedniego wiersza
 		#print(spispna_df['MIEJSCOWOŚĆ'])
 		if not pna_row.empty:
 			result_df.loc[index, "PNA_WOJ"] = pna_row['WOJEWÓDZTWO'].values[0]
@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
 		#SCRAP
 
-		if check_url(adres_www) == False:
+		if check_url(adres_www) == False: #jesli strona nie dziala to brak żadnych poprawnych danych
 			result_df.at[index, 'SCRAP_URL'] = "blad strony"
 			result_df.at[index, 'COMP_SCRAP_URL'] = '0'
 			result_df.at[index, 'COMP_SCRAP_MAIL'] = '0'
@@ -285,7 +285,7 @@ if __name__ == "__main__":
 			if result_df.loc[index, "COMP_SCRAP_MAIL"] == "1" and result_df.loc[index, "COMP_SCRAP_TEL"] == "1" \
 					and result_df.loc[index, "COMP_SCRAP_FAX"] == "1" and result_df.loc[index, "COMP_SCRAP_POST_CODE"] == "1"\
 					and result_df.loc[index, "COMP_SCRAP_STREET"] == "1" and result_df.loc[index, "COMP_SCRAP_ESP"] == "1":
-				break
+				break #zatrzymujemy program jeśli wszystkie informacje byly sprawdzone i poprawne
 
 		result_df.at[index, 'SCRAP_URL'] = adres_www
 		result_df.at[index, 'COMP_SCRAP_URL'] = '1'
@@ -305,7 +305,7 @@ if __name__ == "__main__":
 
 
 
-		if not result_df.loc[index, "COMP_SCRAP_MAIL"] == "1":
+		if not result_df.loc[index, "COMP_SCRAP_MAIL"] == "1": #by wszędzie gdzie nie znaleziono poprawnej informacji, zaznaczyć 0
 			result_df.at[index, 'COMP_SCRAP_MAIL'] = '0'
 		if not result_df.loc[index, "COMP_SCRAP_TEL"] == "1":
 			result_df.at[index, 'COMP_SCRAP_TEL'] = '0'
