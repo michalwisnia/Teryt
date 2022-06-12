@@ -40,7 +40,6 @@ if __name__ == "__main__":
 
 	result_df = baza_teleadresowa_jst_df.reindex(columns=baza_teleadresowa_jst_df.columns.tolist() + new_columns)
 
-	# print(result_df)
 
 	teryt_df = pd.read_csv("data/TERC_Urzedowy_2022-03-14.csv", sep=";",  encoding="utf-8", dtype=terytTypes)
 
@@ -86,9 +85,6 @@ if __name__ == "__main__":
 		# if (adres_www == 'http://www.ugnowemiasto.pl/' or adres_www == 'www.zbuczyn.pl'):
 		#    continue
 
-		# print(i, adres_www)
-
-		# print(kod_teryt)
 		res_woj = teryt_df.loc[(teryt_df['WOJ'] == kod_teryt[:2]) & (teryt_df['POW'].isna()) & (teryt_df['GMI'].isna())]
 		res_pow = teryt_df.loc[(teryt_df['WOJ'] == kod_teryt[:2]) & (teryt_df['POW'] == kod_teryt[2:4]) & (teryt_df['GMI'].isna())]
 		res_gmi = teryt_df.loc[(teryt_df['WOJ'] == kod_teryt[:2]) & (teryt_df['POW'] == kod_teryt[2:4]) & (teryt_df['GMI'] == kod_teryt[4:6]) & (teryt_df['RODZ'] == kod_teryt[6])]
@@ -136,7 +132,6 @@ if __name__ == "__main__":
 		#Poczta polska
 
 		pna_row = spispna_df.loc[(spispna_df['PNA'] == kod_pocztowy) & (spispna_df['MIEJSCOWOŚĆ'] == miasto)] #do odszukania odpowiedniego wiersza
-		#print(spispna_df['MIEJSCOWOŚĆ'])
 		if not pna_row.empty:
 			result_df.loc[index, "PNA_WOJ"] = pna_row['WOJEWÓDZTWO'].values[0]
 			result_df.loc[index, "PNA_POW"] = pna_row['POWIAT'].values[0]
@@ -173,7 +168,6 @@ if __name__ == "__main__":
 
 
 		urls = get_kontakt_url(adres_www)
-		#print(urls)
 
 		scraped_email = []
 		scraped_tel = []
@@ -182,19 +176,13 @@ if __name__ == "__main__":
 		scraped_address_street = []
 		scraped_esp = None
 
-		# print(scrap_address(kontakt_url))
-		# print(scrap_ESP(kontakt_url))
-		# load_patterns()
+
 		for url in urls:
 			try:
 				headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)'}
 				response = requests.get(url, headers=headers, verify=False, timeout=10)
 				page_body = BeautifulSoup(response.content, "html.parser")
 				page_body_str = str(page_body)
-
-				#print("zawarty email = ", check_in_page(str(email), page_body))
-				#print('--------SCRAP-------')
-				#print(url)
 
 				if not result_df.loc[index, "COMP_SCRAP_MAIL"] == "1":
 					if (check_in_page(str(email), page_body)) == True:
@@ -206,7 +194,6 @@ if __name__ == "__main__":
 							scraped_email.clear()
 							scraped_email.append(email)
 							result_df.at[index, 'COMP_SCRAP_MAIL'] = '1'
-						#print(f"Email:  {scraped_email}")
 
 				if not result_df.loc[index, "COMP_SCRAP_TEL"] == "1":
 					if (check_combinations(generate_number_combinations(tel_kier, tel_reszta), page_body)) == True:
@@ -218,7 +205,6 @@ if __name__ == "__main__":
 							scraped_tel.clear()
 							scraped_tel.append(tel_kier + tel_reszta)
 							result_df.at[index, 'COMP_SCRAP_TEL'] = '1'
-							#print(f"Telefony:  {scraped_tel}")
 
 				if not result_df.loc[index, "COMP_SCRAP_FAX"] == "1":
 					if (check_combinations(generate_number_combinations(fax_kier, fax_reszta), page_body)) == True:
@@ -230,7 +216,6 @@ if __name__ == "__main__":
 							scraped_fax.clear()
 							scraped_fax.append(fax_kier + fax_reszta)
 							result_df.at[index, 'COMP_SCRAP_FAX'] = '1'
-							#print(f"Fax:  {scraped_fax}")
 
 				if not result_df.loc[index, "COMP_SCRAP_POST_CODE"] == "1":
 					if (check_in_page(str(kod_pocztowy), page_body)) == True:
@@ -242,7 +227,6 @@ if __name__ == "__main__":
 							scraped_address_zip_city.clear()
 							scraped_address_zip_city.append(kod_pocztowy)
 							result_df.at[index, 'COMP_SCRAP_POST_CODE'] = '1'
-						#print(f"Kod pocztowy, miasto:  {scraped_address_zip_city}")
 
 				if str(Ulica).endswith(' '):
 					adres_nr = str(Ulica) + str(Nr_domu)
@@ -278,9 +262,6 @@ if __name__ == "__main__":
 			except requests.exceptions.RequestException as e:
 				print(f"blad strony {url}")
 
-			# if len(scraped_email) != 0 and len(scraped_tel) != 0 and len(scraped_fax) != 0 and len(
-			# 		scraped_address_zip_city) != 0 and len(scraped_address_street) != 0 and scraped_esp is not None:
-			# 	break
 
 			if result_df.loc[index, "COMP_SCRAP_MAIL"] == "1" and result_df.loc[index, "COMP_SCRAP_TEL"] == "1" \
 					and result_df.loc[index, "COMP_SCRAP_FAX"] == "1" and result_df.loc[index, "COMP_SCRAP_POST_CODE"] == "1"\
@@ -326,8 +307,6 @@ if __name__ == "__main__":
 							 errors='ignore')
 			print(f"Zapisano plik output/out_{i}.csv")
 
-	#if i >= 10:
-			#break;
 
 
 	f = open('output/out.html', 'w', encoding="utf-8")

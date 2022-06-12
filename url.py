@@ -6,7 +6,7 @@ import urllib3
 urllib3.disable_warnings()
 
 
-def check_url(adres_www):
+def check_url(adres_www): #do sprawdzenia dzialania strony www
 	if not adres_www.startswith("http"):
 		url = "http://" + adres_www
 	else:
@@ -34,7 +34,7 @@ def check_url(adres_www):
 			return False
 
 
-def get_kontakt_url(adres_www):
+def get_kontakt_url(adres_www): #do wydobycia adresu url strony kontaktowej oraz adresu url strony bip
 	urls = []
 	kontakt_url = None
 	bip_url = None
@@ -46,35 +46,28 @@ def get_kontakt_url(adres_www):
 	try:
 		headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)'}
 		response = requests.get(url, headers=headers, verify=False, timeout=10)
-		# print(response.status_code)
 		soup = BeautifulSoup(response.content, "html.parser")
 
 		if soup.select_one("a[href*=bip]") is not None:
 			a = soup.select_one("a[href*=bip]")
 			href = a.get('href')
-			# print(href)
 			if href is not None:
 				if href.startswith("http"):
 					bip_url = href
 					urls.append(bip_url)
-					# print(bip_url)
 				else:
 					bip_url = url + href
 					urls.append(bip_url)
-					# print(bip_url)
 		elif soup.select_one("a[href*=biuletyn]") is not None:
 			a = soup.select_one("a[href*=biuletyn]")
 			href = a.get('href')
-			# print(href)
 			if href is not None:
 				if href.startswith("http"):
 					bip_url = href
 					urls.append(bip_url)
-					# print(bip_url)
 				else:
 					bip_url = url + href
 					urls.append(bip_url)
-					# print(bip_url)
 
 		if soup.find("a", string=re.compile("[kK]ontakt")):
 			a = soup.find("a", string=re.compile("[kK]ontakt"))
@@ -88,45 +81,36 @@ def get_kontakt_url(adres_www):
 					kontakt_url = url + "/" + href
 				else:
 					kontakt_url = url + href
-				# print(kontakt_url)
 				urls.append(kontakt_url)
 
 	except requests.exceptions.RequestException as e:
 		try:
 			url = e.request.url
-			# print(new_url)
 			headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)'}
 			response = requests.get(url, headers=headers, verify=False, timeout=10)
-			# print(response.status_code)
 			soup = BeautifulSoup(response.content, "html.parser")
 
 
 			if soup.select_one("a[href*=bip]") is not None:
 				a = soup.select_one("a[href*=bip]")
 				href = a.get('href')
-				# print(href)
 				if href is not None:
 					if href.startswith("http"):
 						bip_url = href
 						urls.append(bip_url)
-						# print(bip_url)
 					else:
 						bip_url = url + href
 						urls.append(bip_url)
-						# print(bip_url)
 			elif soup.select_one("a[href*=biuletyn]") is not None:
 				a = soup.select_one("a[href*=biuletyn]")
 				href = a.get('href')
-				# print(href)
 				if href is not None:
 					if href.startswith("http"):
 						bip_url = href
 						urls.append(bip_url)
-						# print(bip_url)
 					else:
 						bip_url = url + href
 						urls.append(bip_url)
-						# print(bip_url)
 
 			if soup.find("a", string=re.compile("[kK]ontakt")):
 				a = soup.find("a", string=re.compile("[kK]ontakt"))
@@ -138,11 +122,9 @@ def get_kontakt_url(adres_www):
 						kontakt_url = url[:-3] + href
 					else:
 						kontakt_url = url + href
-					# print(kontakt_url)
 					urls.append(kontakt_url)
 		except requests.exceptions.RequestException as e:
 			print("blad")
-			# continue
 		except:
 			print("blad")
 	except:
